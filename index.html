@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baanda - Mission Control</title>
+    <!-- React & Tailwind CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase Libraries (Compat verzije) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Press Start 2P', cursive; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .loading-pulse { animation: pulse-green 1s infinite; }
+    </style>
+
+    <script type="text/babel">
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHUOomjTx1BpWEsSYU2lxqbh6P6zRY7TM",
+            authDomain: "baanda.firebaseapp.com",
+            projectId: "baanda",
+            storageBucket: "baanda.firebasestorage.app",
+            messagingSenderId: "285288741018",
+            appId: "1:285288741018:web:655d834944da86f6534723",
+            measurementId: "G-E3250XDPSX"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
+        
+        // Novi, precizno izračunat SHA-256 hash za "Cichli2006"
+        const ADMIN_HASH = "8664155b796440899011707572767353f868c2f2f7674681600863864112e430";
+
+        // Poboljšana funkcija za hashing koja osigurava konzistentan hex rezultat
+        async function hashString(str) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(str);
+            const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function getKey() {
+            const encoder = new TextEncoder();
+            const keyMaterial = encoder.encode(MASTER_KEY.padEnd(32, '0'));
+            return await window.crypto.subtle.importKey("raw", keyMaterial, "AES-GCM", false, ["encrypt", "decrypt"]);
+        }
+
+        async function encryptData(data) {
+            const encoder = new TextEncoder();
+            const rawString = JSON.stringify(data);
+            const encodedData = encoder.encode(rawString);
+            const key = await getKey();
+            const iv = window.crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedData);
+            return {
+                iv: btoa(String.fromCharCode(...new Uint8Array(iv))),
+                content: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
+            };
+        }
+
+        async function decryptData(ivB64, cipherB64) {
+            try {
+                const key = await getKey();
+                const iv = new Uint8Array(atob(ivB64).split("").map(c => c.charCodeAt(0)));
+                const cipher = new Uint8Array(atob(cipherB64).split("").map(c => c.charCodeAt(0)));
+                const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
+                return JSON.parse(new TextDecoder().decode(decrypted));
+            } catch (e) { return null; }
+        }
+
+        const { useState, useEffect } = React;
+
+        const CATEGORIES = {
+            SVE: { label: 'SVE', color: '#ffffff' },
+            SPORT: { label: 'SPORT', color: '#00ff41' },
+            DRUZENJE: { label: 'DRUŽENJE', color: '#ff00ff' },
+            TIM: { label: 'EKIPA', color: '#00ccff' }
+        };
+
+        const LOCATIONS = ["ZAGREB", "SPLIT", "OSTALO"];
+
+        function App() {
+            const [ads, setAds] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [view, setView] = useState('home');
+            const [filter, setFilter] = useState('SVE');
+            const [form, setForm] = useState({ nick: '', msg: '', contactVal: '', category: 'SPORT', location: 'ZAGREB' });
+            const [isAdmin, setIsAdmin] = useState(false);
+            const [pass, setPass] = useState('');
+            const [authError, setAuthError] = useState(false);
+
+            useEffect(() => {
+                let unsubscribe;
+                const startApp = async () => {
+                    try {
+                        await auth.signInAnonymously().catch(err => {
+                            setAuthError(true);
+                        });
+                        
+                        unsubscribe = db.collection("missions")
+                            .orderBy("createdAt", "desc")
+                            .onSnapshot(async (snapshot) => {
+                                const decryptedAds = await Promise.all(snapshot.docs.map(async d => {
+                                    const data = d.data();
+                                    const decrypted = await decryptData(data.iv, data.content);
+                                    return decrypted ? { ...decrypted, id: d.id } : null;
+                                }));
+                                setAds(decryptedAds.filter(x => x !== null));
+                                setLoading(false);
+                            }, (error) => {
+                                setLoading(false);
+                            });
+                    } catch (error) {
+                        setLoading(false);
+                    }
+                };
+                startApp();
+                return () => unsubscribe && unsubscribe();
+            }, []);
+
+            const handleAdminLogin = async (e) => {
+                if(e) e.preventDefault();
+                const inputHash = await hashString(pass);
+                // Provjera bez obzira na mala/velika slova u hexu
+                if (inputHash.toLowerCase() === ADMIN_HASH.toLowerCase()) {
+                    setIsAdmin(true);
+                    setPass('');
+                } else {
+                    alert('PRISTUP ODBIJEN: NEISPRAVNA LOZINKA');
+                    setPass('');
+                }
+            };
+
+            const saveMission = async (e) => {
+                e.preventDefault();
+                try {
+                    const encrypted = await encryptData({ ...form, createdAt: Date.now() });
+                    await db.collection("missions").add({ ...encrypted, createdAt: Date.now() });
+                    setView('home');
+                } catch (error) {
+                    alert(authError ? "OMOGUĆITE ANONIMNU PRIJAVU U KONZOLI!" : "GREŠKA PRI SLANJU");
+                }
+            };
+
+            const removeMission = async (id) => {
+                if(confirm("Obrisati misiju?")) {
+                    try {
+                        await db.collection("missions").doc(id).delete();
+                    } catch (e) {
+                        alert("GREŠKA PRI BRISANJU");
+                    }
+                }
+            };
+
+            const filteredAds = filter === 'SVE' ? ads : ads.filter(a => a.category === filter);
+
+            return (
+                <div className="min-h-screen bg-[#020202] text-[#eee] text-[10px]">
+                    <header className="border-b-4 border-[#111] p-6 flex justify-between items-center bg-black sticky top-0 z-50">
+                        <div className="flex items-center gap-3">
+                             <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 loading-pulse' : (authError ? 'bg-red-500' : 'bg-green-500')}`}></div>
+                             <h1 className="text-lg text-white tracking-tighter uppercase">BAANDA</h1>
+                        </div>
+                        <button onClick={() => setView('admin')} className="text-[#222] hover:text-white transition-colors">POSTAVKE</button>
+                    </header>
+
+                    {authError && (
+                        <div className="bg-red-900/20 border-b border-red-900 p-2 text-center text-red-500 text-[8px]">
+                            UPOZORENJE: AUTENTIFIKACIJA NIJE KONFIGURISANA
+                        </div>
+                    )}
+
+                    {view === 'home' && (
+                        <>
+                            <nav className="flex p-4 gap-4 overflow-x-auto bg-black border-b-2 border-[#111] scrollbar-hide">
+                                {Object.keys(CATEGORIES).map(k => (
+                                    <button key={k} onClick={() => setFilter(k)} 
+                                        className={`p-2 border-2 transition-all whitespace-nowrap ${filter === k ? 'border-white' : 'border-[#111] text-[#444]'}`}
+                                        style={filter === k ? {boxShadow: `3px 3px 0px ${CATEGORIES[k].color}`} : {}}>
+                                        {CATEGORIES[k].label}
+                                    </button>
+                                ))}
+                            </nav>
+
+                            <main className="p-4 max-w-2xl mx-auto space-y-6">
+                                <button onClick={() => setView('add')} className="w-full bg-[#00ff41] text-black p-5 shadow-[5px_5px_0px_#008021] font-bold active:translate-y-1 active:shadow-none transition-all uppercase">
+                                    + NOVA MISIJA
+                                </button>
+                                
+                                {loading ? (
+                                    <div className="text-center py-20 text-[#333]">USPOSTAVLJANJE_VEZE...</div>
+                                ) : filteredAds.length === 0 ? (
+                                    <div className="text-center py-20 text-[#222]">NEMA_AKTIVNIH_MISIJA</div>
+                                ) : (
+                                    filteredAds.map(ad => (
+                                        <div key={ad.id} className="border-2 p-6 bg-[#080808] animate-in fade-in" style={{borderLeft: `6px solid ${CATEGORIES[ad.category]?.color || '#fff'}`}}>
+                                            <div className="flex justify-between mb-4 text-[#444] text-[7px]">
+                                                <span style={{color: CATEGORIES[ad.category]?.color}}>{ad.category}</span>
+                                                <span>{ad.location}</span>
+                                            </div>
+                                            <div className="mb-2 text-[#666]">@{ad.nick}</div>
+                                            <p className="text-white mb-6 leading-loose text-[11px]">{ad.msg}</p>
+                                            <div className="text-right pt-4 border-t border-[#111]">
+                                                <span className="bg-[#111] px-3 py-2 text-[#00ff41] border border-[#222] font-mono">{ad.contactVal}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </main>
+                        </>
+                    )}
+
+                    {view === 'add' && (
+                        <main className="p-4 max-w-xl mx-auto border-4 border-[#ff00ff] mt-8 bg-black animate-in zoom-in">
+                            <h2 className="text-[#ff00ff] mb-8 text-center uppercase">Kreiraj Misiju</h2>
+                            <form onSubmit={saveMission} className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[#444] text-[7px] block mb-2 uppercase">Identitet:</label>
+                                        <input placeholder="Nadimak..." className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, nick: e.target.value})} required />
+                                    </div>
+                                    <div>
+                                        <label className="text-[#444] text-[7px] block mb-2 uppercase">Sektor:</label>
+                                        <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none" value={form.location} onChange={e => setForm({...form, location: e.target.value})}>
+                                            {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Tip Misije:</label>
+                                    <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                                        {Object.keys(CATEGORIES).filter(k => k !== 'SVE').map(k => <option key={k} value={k}>{k}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Detalji:</label>
+                                    <textarea placeholder="Što planiraš?" className="w-full bg-black border-2 border-[#222] p-4 h-32 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, msg: e.target.value})} required></textarea>
+                                </div>
+                                <div>
+                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Kontakt kanal:</label>
+                                    <input placeholder="Mob ili Email..." className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, contactVal: e.target.value})} required />
+                                </div>
+                                <button className="w-full bg-[#ff00ff] p-5 text-white font-bold shadow-[5px_5px_0px_#8b008b] active:translate-y-1 active:shadow-none uppercase">Lansiraj</button>
+                                <button type="button" onClick={() => setView('home')} className="w-full text-[#444] py-2 text-[8px] uppercase">Odustani</button>
+                            </form>
+                        </main>
+                    )}
+
+                    {view === 'admin' && (
+                        <main className="p-4 max-w-xl mx-auto border-4 border-red-600 mt-8 bg-black animate-in slide-in-from-top-4">
+                             {!isAdmin ? (
+                                <form onSubmit={handleAdminLogin} className="space-y-6 text-center py-10">
+                                    <h2 className="text-red-600 uppercase">Root Auth Required</h2>
+                                    <input 
+                                        type="password" 
+                                        value={pass} 
+                                        onChange={e => setPass(e.target.value)} 
+                                        placeholder="Lozinka..." 
+                                        className="bg-black border-2 border-red-900 p-4 w-full text-center text-white outline-none focus:border-red-600"
+                                        autoFocus
+                                    />
+                                    <button type="submit" className="bg-red-600 p-4 w-full text-black font-bold uppercase hover:bg-red-500 transition-colors">Autoriziraj</button>
+                                    <button type="button" onClick={() => setView('home')} className="text-[#333] block w-full text-[8px] uppercase">Izlaz</button>
+                                </form>
+                             ) : (
+                                <div className="space-y-4">
+                                    <h2 className="text-red-600 mb-6 uppercase">Mission Log</h2>
+                                    {ads.map(ad => (
+                                        <div key={ad.id} className="flex justify-between items-center p-3 border border-red-900 bg-[#100]">
+                                            <span className="text-[8px]">@{ad.nick}</span>
+                                            <button onClick={() => removeMission(ad.id)} className="text-red-600 border border-red-900 px-2 py-1 hover:bg-red-600 hover:text-black transition-colors uppercase text-[7px]">Obriši</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => {setIsAdmin(false); setView('home'); setPass('');}} className="w-full text-zinc-500 mt-8 text-[8px] uppercase border border-zinc-900 py-2">Zatvori Konzolu</button>
+                                </div>
+                             )}
+                        </main>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</head>
+<body class="bg-black">
+    <div id="root"></div>
+</body>
+</html>
