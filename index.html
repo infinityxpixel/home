@@ -25,6 +25,7 @@
             50% { opacity: 0.5; }
         }
         .loading-pulse { animation: pulse-green 1s infinite; }
+        input:invalid { border-color: #ef4444; }
     </style>
 
     <script type="text/babel">
@@ -46,13 +47,12 @@
 
         const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
         
-        // Novi, precizno izračunat SHA-256 hash za "Cichli2006"
-        const ADMIN_HASH = "8664155b796440899011707572767353f868c2f2f7674681600863864112e430";
+        // SHA-256 hash za "cichli2006"
+        const ADMIN_HASH = "805c93c4c9276994119d691e87834579974246059d4350567e41136b95c3741a";
 
-        // Poboljšana funkcija za hashing koja osigurava konzistentan hex rezultat
         async function hashString(str) {
             const encoder = new TextEncoder();
-            const data = encoder.encode(str);
+            const data = encoder.encode(str.trim());
             const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -93,7 +93,7 @@
             SVE: { label: 'SVE', color: '#ffffff' },
             SPORT: { label: 'SPORT', color: '#00ff41' },
             DRUZENJE: { label: 'DRUŽENJE', color: '#ff00ff' },
-            TIM: { label: 'EKIPA', color: '#00ccff' }
+            IZLASCI: { label: 'IZLASCI', color: '#00ccff' }
         };
 
         const LOCATIONS = ["ZAGREB", "SPLIT", "OSTALO"];
@@ -103,7 +103,7 @@
             const [loading, setLoading] = useState(true);
             const [view, setView] = useState('home');
             const [filter, setFilter] = useState('SVE');
-            const [form, setForm] = useState({ nick: '', msg: '', contactVal: '', category: 'SPORT', location: 'ZAGREB' });
+            const [form, setForm] = useState({ nick: '', msg: '', contactType: 'MOBITEL', contactVal: '', category: 'SPORT', location: 'ZAGREB' });
             const [isAdmin, setIsAdmin] = useState(false);
             const [pass, setPass] = useState('');
             const [authError, setAuthError] = useState(false);
@@ -140,8 +140,7 @@
             const handleAdminLogin = async (e) => {
                 if(e) e.preventDefault();
                 const inputHash = await hashString(pass);
-                // Provjera bez obzira na mala/velika slova u hexu
-                if (inputHash.toLowerCase() === ADMIN_HASH.toLowerCase()) {
+                if (inputHash === ADMIN_HASH) {
                     setIsAdmin(true);
                     setPass('');
                 } else {
@@ -157,7 +156,7 @@
                     await db.collection("missions").add({ ...encrypted, createdAt: Date.now() });
                     setView('home');
                 } catch (error) {
-                    alert(authError ? "OMOGUĆITE ANONIMNU PRIJAVU U KONZOLI!" : "GREŠKA PRI SLANJU");
+                    alert("GREŠKA PRI SLANJU");
                 }
             };
 
@@ -182,12 +181,6 @@
                         </div>
                         <button onClick={() => setView('admin')} className="text-[#222] hover:text-white transition-colors">POSTAVKE</button>
                     </header>
-
-                    {authError && (
-                        <div className="bg-red-900/20 border-b border-red-900 p-2 text-center text-red-500 text-[8px]">
-                            UPOZORENJE: AUTENTIFIKACIJA NIJE KONFIGURISANA
-                        </div>
-                    )}
 
                     {view === 'home' && (
                         <>
@@ -224,7 +217,7 @@
                                             </div>
                                         </div>
                                     ))
-                                )}
+                                ) || <div className="text-center py-20 text-[#222]">GREŠKA PRI UČITAVANJU</div>}
                             </main>
                         </>
                     )}
@@ -257,7 +250,20 @@
                                 </div>
                                 <div>
                                     <label className="text-[#444] text-[7px] block mb-2 uppercase">Kontakt kanal:</label>
-                                    <input placeholder="Mob ili Email..." className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, contactVal: e.target.value})} required />
+                                    <div className="flex gap-2 mb-2">
+                                        <button type="button" onClick={() => setForm({...form, contactType: 'MOBITEL', contactVal: ''})} className={`flex-1 p-2 border-2 text-[7px] ${form.contactType === 'MOBITEL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>MOBITEL</button>
+                                        <button type="button" onClick={() => setForm({...form, contactType: 'EMAIL', contactVal: ''})} className={`flex-1 p-2 border-2 text-[7px] ${form.contactType === 'EMAIL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>EMAIL</button>
+                                    </div>
+                                    <input 
+                                        type={form.contactType === 'EMAIL' ? 'email' : 'text'}
+                                        pattern={form.contactType === 'MOBITEL' ? '[0-9+ ]{6,15}' : undefined}
+                                        placeholder={form.contactType === 'MOBITEL' ? "09X 123 456" : "ime@domena.com"} 
+                                        className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" 
+                                        value={form.contactVal}
+                                        onChange={e => setForm({...form, contactVal: e.target.value})} 
+                                        required 
+                                    />
+                                    <p className="text-[6px] text-[#333] mt-2 italic">Format: {form.contactType === 'MOBITEL' ? 'Samo brojevi' : 'Validan email'}</p>
                                 </div>
                                 <button className="w-full bg-[#ff00ff] p-5 text-white font-bold shadow-[5px_5px_0px_#8b008b] active:translate-y-1 active:shadow-none uppercase">Lansiraj</button>
                                 <button type="button" onClick={() => setView('home')} className="w-full text-[#444] py-2 text-[8px] uppercase">Odustani</button>
@@ -266,7 +272,7 @@
                     )}
 
                     {view === 'admin' && (
-                        <main className="p-4 max-w-xl mx-auto border-4 border-red-600 mt-8 bg-black animate-in slide-in-from-top-4">
+                        <main className="p-4 max-w-xl mx-auto border-4 border-red-600 mt-8 bg-black">
                              {!isAdmin ? (
                                 <form onSubmit={handleAdminLogin} className="space-y-6 text-center py-10">
                                     <h2 className="text-red-600 uppercase">Root Auth Required</h2>
@@ -274,19 +280,22 @@
                                         type="password" 
                                         value={pass} 
                                         onChange={e => setPass(e.target.value)} 
-                                        placeholder="Lozinka..." 
+                                        placeholder="Nova lozinka..." 
                                         className="bg-black border-2 border-red-900 p-4 w-full text-center text-white outline-none focus:border-red-600"
                                         autoFocus
                                     />
-                                    <button type="submit" className="bg-red-600 p-4 w-full text-black font-bold uppercase hover:bg-red-500 transition-colors">Autoriziraj</button>
-                                    <button type="button" onClick={() => setView('home')} className="text-[#333] block w-full text-[8px] uppercase">Izlaz</button>
+                                    <button type="submit" className="bg-red-600 p-4 w-full text-black font-bold uppercase">Autoriziraj</button>
+                                    <button type="button" onClick={() => setView('home')} className="text-[#333] block w-full text-[8px] uppercase mt-4">Izlaz</button>
                                 </form>
                              ) : (
                                 <div className="space-y-4">
                                     <h2 className="text-red-600 mb-6 uppercase">Mission Log</h2>
                                     {ads.map(ad => (
                                         <div key={ad.id} className="flex justify-between items-center p-3 border border-red-900 bg-[#100]">
-                                            <span className="text-[8px]">@{ad.nick}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-[8px] text-red-500">@{ad.nick}</span>
+                                                <span className="text-[6px] text-zinc-600">{ad.contactVal}</span>
+                                            </div>
                                             <button onClick={() => removeMission(ad.id)} className="text-red-600 border border-red-900 px-2 py-1 hover:bg-red-600 hover:text-black transition-colors uppercase text-[7px]">Obriši</button>
                                         </div>
                                     ))}
