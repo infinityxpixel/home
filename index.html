@@ -18,16 +18,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Press Start 2P', cursive; background-color: #ffffff; color: #1a1a1a; }
+        body { font-family: 'Press Start 2P', cursive; background-color: #000; color: #eee; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         @keyframes pulse-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .loading-pulse { animation: pulse-green 1s infinite; }
         .dino-logo { width: 32px; height: 32px; image-rendering: pixelated; }
         .captcha-box { 
-            background: repeating-linear-gradient(45deg, #f0f0f0, #f0f0f0 10px, #e5e5e5 10px, #e5e5e5 20px);
+            background: repeating-linear-gradient(45deg, #111, #111 10px, #151515 10px, #151515 20px);
             font-family: monospace;
             letter-spacing: 8px;
             user-select: none;
+        }
+        .mission-card {
+            background-color: #080808;
+            border: 2px solid #111;
+            transition: transform 0.2s ease;
+        }
+        .mission-card:hover {
+            border-color: #222;
         }
     </style>
 
@@ -47,10 +55,10 @@
 
         const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
         const CATEGORIES = {
-            SVE: { label: 'SVE', color: '#1a1a1a' },
-            SPORT: { label: 'SPORT', color: '#00aa2b' },
-            DRUZENJE: { label: 'DRUŽENJE', color: '#c200c2' },
-            IZLASCI: { label: 'IZLASCI', color: '#0084ad' }
+            SVE: { label: 'SVE', color: '#ffffff' },
+            SPORT: { label: 'SPORT', color: '#00ff41' },
+            DRUZENJE: { label: 'DRUŽENJE', color: '#ff00ff' },
+            IZLASCI: { label: 'IZLASCI', color: '#00ccff' }
         };
 
         async function getKey() {
@@ -83,8 +91,8 @@
 
         const DinoLogo = () => (
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="dino-logo">
-                <path d="M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z" fill="#00aa2b"/>
-                <path d="M14 6H16V8H14V6Z" fill="white"/><path d="M6 12H8V14H6V12Z" fill="#00641a"/><path d="M10 14H12V16H10V14Z" fill="#00641a"/>
+                <path d="M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z" fill="#00ff41"/>
+                <path d="M14 6H16V8H14V6Z" fill="black"/><path d="M6 12H8V14H6V12Z" fill="#008021"/><path d="M10 14H12V16H10V14Z" fill="#008021"/>
             </svg>
         );
 
@@ -132,22 +140,22 @@
             const filteredAds = useMemo(() => filter === 'SVE' ? ads : ads.filter(a => a.category === filter), [ads, filter]);
 
             return (
-                <div className="min-h-screen flex flex-col bg-white">
-                    <header className="border-b-4 border-[#f0f0f0] p-6 flex justify-between items-center bg-white sticky top-0 z-50">
+                <div className="min-h-screen flex flex-col">
+                    <header className="border-b-4 border-[#111] p-6 flex justify-between items-center bg-black sticky top-0 z-50">
                         <div className="flex items-center gap-4">
                              <DinoLogo />
-                             <h1 className="text-[12px] md:text-lg text-black tracking-tighter uppercase">BAANDA</h1>
+                             <h1 className="text-[12px] md:text-lg text-white tracking-tighter uppercase">BAANDA</h1>
                              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 loading-pulse' : 'bg-green-500'}`}></div>
                         </div>
-                        <div className="text-[6px] text-[#999] uppercase hidden md:block tracking-[3px]">Druzimo se i uzivo!</div>
+                        <div className="text-[6px] text-[#444] uppercase hidden md:block tracking-[3px]">Druzimo se i uzivo!</div>
                     </header>
 
                     {view === 'home' ? (
                         <>
-                            <nav className="flex p-4 gap-4 overflow-x-auto bg-white border-b-2 border-[#f0f0f0] scrollbar-hide sticky top-[76px] z-40">
+                            <nav className="flex p-4 gap-4 overflow-x-auto bg-black border-b-2 border-[#111] scrollbar-hide sticky top-[76px] z-40">
                                 {Object.keys(CATEGORIES).map(k => (
                                     <button key={k} onClick={() => setFilter(k)} 
-                                        className={`px-4 py-2 border-2 transition-all whitespace-nowrap text-[8px] ${filter === k ? 'border-black' : 'border-[#f0f0f0] text-[#999]'}`}
+                                        className={`px-4 py-2 border-2 transition-all whitespace-nowrap text-[8px] ${filter === k ? 'border-white text-white' : 'border-[#111] text-[#444]'}`}
                                         style={filter === k ? {boxShadow: `3px 3px 0px ${CATEGORIES[k].color}`} : {}}>
                                         {CATEGORIES[k].label}
                                     </button>
@@ -155,25 +163,34 @@
                             </nav>
 
                             <main className="p-4 max-w-2xl mx-auto w-full space-y-6 flex-grow">
-                                <button onClick={() => setView('add')} className="w-full bg-black text-white p-6 shadow-[6px_6px_0px_#ccc] font-bold active:translate-y-1 active:shadow-none transition-all text-[10px] uppercase">
+                                <button onClick={() => setView('add')} className="w-full bg-[#00ff41] text-black p-6 shadow-[6px_6px_0px_#008021] font-bold active:translate-y-1 active:shadow-none transition-all text-[10px] uppercase">
                                     + NOVA MISIJA
                                 </button>
                                 
                                 {loading ? (
-                                    <div className="text-center py-20 text-[#ccc] text-[8px]">SCANNING_FREQUENCIES...</div>
+                                    <div className="text-center py-20 text-[#333] text-[8px]">SCANNING_FREQUENCIES...</div>
                                 ) : filteredAds.length === 0 ? (
-                                    <div className="text-center py-20 text-[#eee] text-[8px]">NO_MISSIONS_FOUND</div>
+                                    <div className="text-center py-20 text-[#222] text-[8px]">NO_MISSIONS_FOUND</div>
                                 ) : (
                                     filteredAds.map(ad => (
-                                        <div key={ad.id} className="border-2 p-6 bg-white animate-in fade-in" style={{borderLeft: `6px solid ${CATEGORIES[ad.category]?.color || '#000'}`, borderColor: '#f0f0f0'}}>
-                                            <div className="flex justify-between mb-4 text-[#999] text-[7px] uppercase">
-                                                <span style={{color: CATEGORIES[ad.category]?.color}}>{ad.category}</span>
-                                                <span>{ad.location}</span>
+                                        <div key={ad.id} className="mission-card p-6 animate-in fade-in" style={{borderLeft: `6px solid ${CATEGORIES[ad.category]?.color || '#fff'}`}}>
+                                            <div className="flex justify-between mb-4 text-[7px] uppercase font-bold tracking-widest">
+                                                <span style={{color: CATEGORIES[ad.category]?.color}} className="bg-black/50 px-2 py-1 border border-[#222]">
+                                                    {ad.category}
+                                                </span>
+                                                <span className="text-[#444]">{ad.location}</span>
                                             </div>
-                                            <div className="mb-2 text-[#ccc] text-[8px]">@{ad.nick}</div>
-                                            <p className="text-black mb-6 leading-relaxed text-[10px]">{ad.msg}</p>
-                                            <div className="text-right pt-4 border-t border-[#f0f0f0]">
-                                                <span className="bg-white px-3 py-2 text-black border border-[#f0f0f0] font-mono text-[9px] tracking-widest">{ad.contactVal}</span>
+                                            <div className="mb-3 text-[#444] text-[8px]">
+                                                <span className="mr-1">@</span>
+                                                {ad.nick}
+                                            </div>
+                                            <p className="text-[#ccc] mb-6 leading-relaxed text-[10px] break-words">
+                                                {ad.msg}
+                                            </p>
+                                            <div className="text-right pt-4 border-t border-[#111]">
+                                                <span className="bg-[#000] px-3 py-2 text-[#00ff41] border border-[#222] font-mono text-[9px] tracking-widest shadow-[2px_2px_0px_#004411]">
+                                                    {ad.contactVal}
+                                                </span>
                                             </div>
                                         </div>
                                     ))
@@ -181,17 +198,17 @@
                             </main>
                         </>
                     ) : (
-                        <main className="p-6 max-w-xl mx-auto w-full border-4 border-[#c200c2] my-8 bg-white animate-in zoom-in duration-200">
-                            <h2 className="text-[#c200c2] mb-8 text-center uppercase tracking-widest text-[10px]">Nova Operacija</h2>
+                        <main className="p-6 max-w-xl mx-auto w-full border-4 border-[#ff00ff] my-8 bg-black animate-in zoom-in duration-200 shadow-[10px_10px_0px_#440044]">
+                            <h2 className="text-[#ff00ff] mb-8 text-center uppercase tracking-widest text-[10px]">Nova Operacija</h2>
                             <form onSubmit={saveMission} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <label className="text-[#999] text-[7px] block uppercase">Identitet:</label>
-                                        <input maxLength="15" className="w-full bg-white border-2 border-[#f0f0f0] p-4 outline-none focus:border-[#c200c2] text-black text-[9px]" onChange={e => setForm({...form, nick: e.target.value})} required />
+                                        <label className="text-[#444] text-[7px] block uppercase">Identitet:</label>
+                                        <input maxLength="15" className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white text-[9px]" onChange={e => setForm({...form, nick: e.target.value})} required />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[#999] text-[7px] block uppercase">Sektor:</label>
-                                        <select className="w-full bg-white border-2 border-[#f0f0f0] p-4 outline-none text-[#c200c2] appearance-none text-[9px]" value={form.location} onChange={e => setForm({...form, location: e.target.value})}>
+                                        <label className="text-[#444] text-[7px] block uppercase">Sektor:</label>
+                                        <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none text-[9px]" value={form.location} onChange={e => setForm({...form, location: e.target.value})}>
                                             <option value="ZAGREB">ZAGREB</option>
                                             <option value="SPLIT">SPLIT</option>
                                             <option value="OSTALO">OSTALO</option>
@@ -199,23 +216,23 @@
                                     </div>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[#999] text-[7px] block uppercase">Tip Misije:</label>
-                                    <select className="w-full bg-white border-2 border-[#f0f0f0] p-4 outline-none text-[#c200c2] appearance-none text-[9px]" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                                    <label className="text-[#444] text-[7px] block uppercase">Tip Misije:</label>
+                                    <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none text-[9px]" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
                                         {Object.keys(CATEGORIES).filter(k => k !== 'SVE').map(k => <option key={k} value={k}>{CATEGORIES[k].label}</option>)}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[#999] text-[7px] block uppercase">Detalji:</label>
-                                    <textarea maxLength="250" placeholder="Max 250 znakova..." className="w-full bg-white border-2 border-[#f0f0f0] p-4 h-32 outline-none focus:border-[#c200c2] text-black text-[9px] leading-relaxed" onChange={e => setForm({...form, msg: e.target.value})} required></textarea>
+                                    <label className="text-[#444] text-[7px] block uppercase">Detalji:</label>
+                                    <textarea maxLength="250" placeholder="Max 250 znakova..." className="w-full bg-black border-2 border-[#222] p-4 h-32 outline-none focus:border-[#ff00ff] text-white text-[9px] leading-relaxed" onChange={e => setForm({...form, msg: e.target.value})} required></textarea>
                                 </div>
                                 <div className="space-y-2">
-                                    <label className="text-[#999] text-[7px] block uppercase">Kontakt kanal:</label>
+                                    <label className="text-[#444] text-[7px] block uppercase">Kontakt kanal:</label>
                                     <div className="flex gap-2 mb-2">
-                                        <button type="button" onClick={() => setForm({...form, contactType: 'MOBITEL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] ${form.contactType === 'MOBITEL' ? 'border-[#c200c2] text-[#c200c2]' : 'border-[#f0f0f0] text-[#999]'}`}>MOBITEL</button>
-                                        <button type="button" onClick={() => setForm({...form, contactType: 'EMAIL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] ${form.contactType === 'EMAIL' ? 'border-[#c200c2] text-[#c200c2]' : 'border-[#f0f0f0] text-[#999]'}`}>EMAIL</button>
+                                        <button type="button" onClick={() => setForm({...form, contactType: 'MOBITEL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] ${form.contactType === 'MOBITEL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>MOBITEL</button>
+                                        <button type="button" onClick={() => setForm({...form, contactType: 'EMAIL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] ${form.contactType === 'EMAIL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>EMAIL</button>
                                     </div>
                                     <input 
-                                        className="w-full bg-white border-2 border-[#f0f0f0] p-4 outline-none focus:border-[#c200c2] text-black text-[9px]" 
+                                        className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white text-[9px]" 
                                         value={form.contactVal}
                                         onChange={e => setForm({...form, contactVal: e.target.value})} 
                                         placeholder={form.contactType === 'MOBITEL' ? "Npr. 091 234..." : "primjer@mail.com"}
@@ -223,19 +240,19 @@
                                     />
                                 </div>
 
-                                <div className="border-2 border-[#f0f0f0] p-4 space-y-3 bg-[#fafafa]">
+                                <div className="border-2 border-[#222] p-4 space-y-3 bg-[#050505]">
                                     <div className="flex justify-between items-center">
-                                        <label className="text-[#999] text-[7px] uppercase">Anti-Bot Verifikacija:</label>
-                                        <span onClick={genCaptcha} className="text-[#999] text-[6px] cursor-pointer hover:text-black underline">REFRESH</span>
+                                        <label className="text-[#444] text-[7px] uppercase">Anti-Bot Verifikacija:</label>
+                                        <span onClick={genCaptcha} className="text-[#333] text-[6px] cursor-pointer hover:text-white underline">REFRESH</span>
                                     </div>
                                     <div className="flex gap-4 items-center">
-                                        <div className="captcha-box flex-1 h-12 flex items-center justify-center text-[#c200c2] text-xl font-bold italic tracking-widest border border-[#eee]">
+                                        <div className="captcha-box flex-1 h-12 flex items-center justify-center text-[#ff00ff] text-xl font-bold italic tracking-widest border border-[#333]">
                                             {captchaCode}
                                         </div>
                                         <input 
                                             placeholder="????"
                                             maxLength="4"
-                                            className="w-20 bg-white border-2 border-[#f0f0f0] h-12 text-center text-black outline-none focus:border-[#c200c2]"
+                                            className="w-20 bg-black border-2 border-[#222] h-12 text-center text-white outline-none focus:border-[#ff00ff]"
                                             value={userCaptcha}
                                             onChange={e => setUserCaptcha(e.target.value.replace(/\D/g,''))}
                                         />
@@ -244,16 +261,16 @@
 
                                 <button 
                                     disabled={userCaptcha !== captchaCode}
-                                    className={`w-full p-5 font-bold shadow-[6px_6px_0px_#ddd] active:translate-y-1 active:shadow-none uppercase text-[10px] transition-all ${userCaptcha === captchaCode ? 'bg-[#c200c2] text-white' : 'bg-[#f0f0f0] text-[#ccc] cursor-not-allowed shadow-none'}`}
+                                    className={`w-full p-5 font-bold shadow-[6px_6px_0px_#8b008b] active:translate-y-1 active:shadow-none uppercase text-[10px] transition-all ${userCaptcha === captchaCode ? 'bg-[#ff00ff] text-white' : 'bg-[#222] text-[#444] cursor-not-allowed shadow-none'}`}
                                 >
                                     Lansiraj
                                 </button>
-                                <button type="button" onClick={() => setView('home')} className="w-full text-[#999] py-2 text-[8px] uppercase">Prekini</button>
+                                <button type="button" onClick={() => setView('home')} className="w-full text-[#333] py-2 text-[8px] uppercase">Prekini</button>
                             </form>
                         </main>
                     )}
 
-                    <footer className="p-10 text-center text-[#ddd] text-[6px] tracking-[4px] uppercase mt-auto">
+                    <footer className="p-10 text-center text-[#111] text-[6px] tracking-[4px] uppercase mt-auto">
                         Baanda // P2P_Encrypted_Network // 2026
                     </footer>
                 </div>
@@ -264,10 +281,6 @@
         root.render(<App />);
     </script>
 </head>
-<body>
-    <div id="root"></div>
-</body>
-</html>
 <body>
     <div id="root"></div>
 </body>
