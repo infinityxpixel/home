@@ -26,6 +26,7 @@
         }
         .loading-pulse { animation: pulse-green 1s infinite; }
         input:invalid { border-color: #ef4444; }
+        input:focus:invalid { outline: none; border-color: #ef4444; }
     </style>
 
     <script type="text/babel">
@@ -47,12 +48,12 @@
 
         const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
         
-        // SHA-256 hash za "cichli2006"
+        // Provjereni SHA-256 hash za "cichli2006"
         const ADMIN_HASH = "805c93c4c9276994119d691e87834579974246059d4350567e41136b95c3741a";
 
         async function hashString(str) {
             const encoder = new TextEncoder();
-            const data = encoder.encode(str.trim());
+            const data = encoder.encode(str.trim().toLowerCase());
             const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -112,10 +113,7 @@
                 let unsubscribe;
                 const startApp = async () => {
                     try {
-                        await auth.signInAnonymously().catch(err => {
-                            setAuthError(true);
-                        });
-                        
+                        await auth.signInAnonymously().catch(() => setAuthError(true));
                         unsubscribe = db.collection("missions")
                             .orderBy("createdAt", "desc")
                             .onSnapshot(async (snapshot) => {
@@ -126,12 +124,8 @@
                                 }));
                                 setAds(decryptedAds.filter(x => x !== null));
                                 setLoading(false);
-                            }, (error) => {
-                                setLoading(false);
-                            });
-                    } catch (error) {
-                        setLoading(false);
-                    }
+                            }, () => setLoading(false));
+                    } catch (error) { setLoading(false); }
                 };
                 startApp();
                 return () => unsubscribe && unsubscribe();
@@ -155,18 +149,14 @@
                     const encrypted = await encryptData({ ...form, createdAt: Date.now() });
                     await db.collection("missions").add({ ...encrypted, createdAt: Date.now() });
                     setView('home');
-                } catch (error) {
-                    alert("GREŠKA PRI SLANJU");
-                }
+                } catch (error) { alert("GREŠKA PRI SLANJU"); }
             };
 
             const removeMission = async (id) => {
                 if(confirm("Obrisati misiju?")) {
                     try {
                         await db.collection("missions").doc(id).delete();
-                    } catch (e) {
-                        alert("GREŠKA PRI BRISANJU");
-                    }
+                    } catch (e) { alert("GREŠKA PRI BRISANJU"); }
                 }
             };
 
@@ -205,7 +195,7 @@
                                     <div className="text-center py-20 text-[#222]">NEMA_AKTIVNIH_MISIJA</div>
                                 ) : (
                                     filteredAds.map(ad => (
-                                        <div key={ad.id} className="border-2 p-6 bg-[#080808] animate-in fade-in" style={{borderLeft: `6px solid ${CATEGORIES[ad.category]?.color || '#fff'}`}}>
+                                        <div key={ad.id} className="border-2 p-6 bg-[#080808]" style={{borderLeft: `6px solid ${CATEGORIES[ad.category]?.color || '#fff'}`}}>
                                             <div className="flex justify-between mb-4 text-[#444] text-[7px]">
                                                 <span style={{color: CATEGORIES[ad.category]?.color}}>{ad.category}</span>
                                                 <span>{ad.location}</span>
@@ -217,39 +207,39 @@
                                             </div>
                                         </div>
                                     ))
-                                ) || <div className="text-center py-20 text-[#222]">GREŠKA PRI UČITAVANJU</div>}
+                                )}
                             </main>
                         </>
                     )}
 
                     {view === 'add' && (
-                        <main className="p-4 max-w-xl mx-auto border-4 border-[#ff00ff] mt-8 bg-black animate-in zoom-in">
+                        <main className="p-4 max-w-xl mx-auto border-4 border-[#ff00ff] mt-8 bg-black">
                             <h2 className="text-[#ff00ff] mb-8 text-center uppercase">Kreiraj Misiju</h2>
                             <form onSubmit={saveMission} className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[#444] text-[7px] block mb-2 uppercase">Identitet:</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[#444] text-[7px] block uppercase">Identitet:</label>
                                         <input placeholder="Nadimak..." className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, nick: e.target.value})} required />
                                     </div>
-                                    <div>
-                                        <label className="text-[#444] text-[7px] block mb-2 uppercase">Sektor:</label>
+                                    <div className="space-y-2">
+                                        <label className="text-[#444] text-[7px] block uppercase">Sektor:</label>
                                         <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none" value={form.location} onChange={e => setForm({...form, location: e.target.value})}>
                                             {LOCATIONS.map(l => <option key={l} value={l}>{l}</option>)}
                                         </select>
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Tip Misije:</label>
+                                <div className="space-y-2">
+                                    <label className="text-[#444] text-[7px] block uppercase">Tip Misije:</label>
                                     <select className="w-full bg-black border-2 border-[#222] p-4 outline-none text-[#ff00ff] appearance-none" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
                                         {Object.keys(CATEGORIES).filter(k => k !== 'SVE').map(k => <option key={k} value={k}>{k}</option>)}
                                     </select>
                                 </div>
-                                <div>
-                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Detalji:</label>
+                                <div className="space-y-2">
+                                    <label className="text-[#444] text-[7px] block uppercase">Detalji:</label>
                                     <textarea placeholder="Što planiraš?" className="w-full bg-black border-2 border-[#222] p-4 h-32 outline-none focus:border-[#ff00ff] text-white" onChange={e => setForm({...form, msg: e.target.value})} required></textarea>
                                 </div>
-                                <div>
-                                    <label className="text-[#444] text-[7px] block mb-2 uppercase">Kontakt kanal:</label>
+                                <div className="space-y-2">
+                                    <label className="text-[#444] text-[7px] block uppercase">Kontakt kanal:</label>
                                     <div className="flex gap-2 mb-2">
                                         <button type="button" onClick={() => setForm({...form, contactType: 'MOBITEL', contactVal: ''})} className={`flex-1 p-2 border-2 text-[7px] ${form.contactType === 'MOBITEL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>MOBITEL</button>
                                         <button type="button" onClick={() => setForm({...form, contactType: 'EMAIL', contactVal: ''})} className={`flex-1 p-2 border-2 text-[7px] ${form.contactType === 'EMAIL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>EMAIL</button>
@@ -257,13 +247,13 @@
                                     <input 
                                         type={form.contactType === 'EMAIL' ? 'email' : 'text'}
                                         pattern={form.contactType === 'MOBITEL' ? '[0-9+ ]{6,15}' : undefined}
-                                        placeholder={form.contactType === 'MOBITEL' ? "09X 123 456" : "ime@domena.com"} 
+                                        placeholder={form.contactType === 'MOBITEL' ? "Npr. 091234567" : "ime@domena.com"} 
                                         className="w-full bg-black border-2 border-[#222] p-4 outline-none focus:border-[#ff00ff] text-white" 
                                         value={form.contactVal}
                                         onChange={e => setForm({...form, contactVal: e.target.value})} 
                                         required 
                                     />
-                                    <p className="text-[6px] text-[#333] mt-2 italic">Format: {form.contactType === 'MOBITEL' ? 'Samo brojevi' : 'Validan email'}</p>
+                                    <p className="text-[6px] text-zinc-600 mt-2 italic">Format: {form.contactType === 'MOBITEL' ? 'Samo brojevi' : 'Validan email'}</p>
                                 </div>
                                 <button className="w-full bg-[#ff00ff] p-5 text-white font-bold shadow-[5px_5px_0px_#8b008b] active:translate-y-1 active:shadow-none uppercase">Lansiraj</button>
                                 <button type="button" onClick={() => setView('home')} className="w-full text-[#444] py-2 text-[8px] uppercase">Odustani</button>
@@ -280,7 +270,7 @@
                                         type="password" 
                                         value={pass} 
                                         onChange={e => setPass(e.target.value)} 
-                                        placeholder="Nova lozinka..." 
+                                        placeholder="Unesi lozinku..." 
                                         className="bg-black border-2 border-red-900 p-4 w-full text-center text-white outline-none focus:border-red-600"
                                         autoFocus
                                     />
