@@ -32,6 +32,21 @@
         @keyframes pulse-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .loading-pulse { animation: pulse-green 1s infinite; }
         .dino-logo { width: 32px; height: 32px; image-rendering: pixelated; }
+        
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 2px;
+            background: rgba(0, 255, 65, 0.1);
+            opacity: 0.5;
+            z-index: 100;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
         .captcha-box { 
             background: repeating-linear-gradient(45deg, #0a0a0a, #0a0a0a 10px, #111 10px, #111 20px);
             font-family: monospace;
@@ -50,6 +65,28 @@
         input, select, textarea {
             background-color: #000 !important;
         }
+
+        /* Checkpoint notification style */
+        .checkpoint-msg {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff41;
+            color: black;
+            padding: 10px 20px;
+            font-size: 8px;
+            z-index: 1000;
+            border: 4px solid #004411;
+            animation: fade-in-out 2s forwards;
+        }
+
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            15% { opacity: 1; transform: translate(-50%, 0px); }
+            85% { opacity: 1; transform: translate(-50%, 0px); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
     </style>
 
     <script type="text/babel">
@@ -67,6 +104,7 @@
         const auth = firebase.auth();
 
         const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
+        const ADMIN_PASS = "sudo1984";
         const CATEGORIES = {
             SVE: { label: 'SVE', color: '#ffffff' },
             SPORT: { label: 'SPORT', color: '#00ff41' },
@@ -102,25 +140,74 @@
             } catch (e) { return null; }
         }
 
-        const DinoLogo = () => (
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="dino-logo">
-                <path d="M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z" fill="#00ff41"/>
-                <path d="M14 6H16V8H14V6Z" fill="black"/><path d="M6 12H8V14H6V12Z" fill="#008021"/><path d="M10 14H12V16H10V14Z" fill="#008021"/>
-            </svg>
-        );
+        const DinoLogo = ({ onLongPress, onClick }) => {
+            const [timer, setTimer] = React.useState(null);
+
+            const handleStart = () => {
+                const t = setTimeout(onLongPress, 3000);
+                setTimer(t);
+            };
+            const handleEnd = () => {
+                if (timer) {
+                    clearTimeout(timer);
+                    setTimer(null);
+                    onClick();
+                }
+            };
+
+            return (
+                <svg 
+                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
+                    className="dino-logo cursor-pointer active:scale-90 transition-transform select-none"
+                    onMouseDown={handleStart} onMouseUp={handleEnd} onMouseLeave={handleEnd}
+                    onTouchStart={handleStart} onTouchEnd={handleEnd}
+                >
+                    <path d="M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z" fill="#00ff41"/>
+                    <path d="M14 6H16V8H14V6Z" fill="black"/><path d="M6 12H8V14H6V12Z" fill="#008021"/><path d="M10 14H12V16H10V14Z" fill="#008021"/>
+                </svg>
+            );
+        };
 
         const { useState, useEffect, useMemo } = React;
 
         function App() {
             const [ads, setAds] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [view, setView] = useState('home');
+            const [view, setView] = useState('home'); // home, add, admin_login, admin_panel
             const [filter, setFilter] = useState('SVE');
+            const [checkpointMsg, setCheckpointMsg] = useState(null);
+            const [adminPassInput, setAdminPassInput] = useState('');
+            const [isAdmin, setIsAdmin] = useState(false);
             const [form, setForm] = useState({ nick: '', msg: '', contactType: 'MOBITEL', contactVal: '', category: 'SPORT', location: 'ZAGREB' });
             
             const [captchaCode, setCaptchaCode] = useState('');
             const [userCaptcha, setUserCaptcha] = useState('');
             const genCaptcha = () => setCaptchaCode(Math.floor(1000 + Math.random() * 9000).toString());
+
+            const triggerCheckpoint = () => {
+                setCheckpointMsg(`CHECKPOINT_SAVED: ${new Date().toLocaleTimeString()}`);
+                setTimeout(() => setCheckpointMsg(null), 2000);
+            };
+
+            const handleAdminLogin = (e) => {
+                e.preventDefault();
+                if (adminPassInput === ADMIN_PASS) {
+                    setIsAdmin(true);
+                    setView('admin_panel');
+                    setAdminPassInput('');
+                    triggerCheckpoint();
+                } else {
+                    setCheckpointMsg("ACCESS_DENIED: WRONG_KEY");
+                    setAdminPassInput('');
+                }
+            };
+
+            const deleteMission = async (id) => {
+                if (confirm("Terminate mission entry forever?")) {
+                    await db.collection("missions").doc(id).delete();
+                    setCheckpointMsg("ENTRY_DELETED");
+                }
+            };
 
             useEffect(() => {
                 let unsubscribe;
@@ -149,6 +236,7 @@
                     await db.collection("missions").add({ ...encrypted, createdAt: Date.now() });
                     setView('home');
                     setUserCaptcha('');
+                    triggerCheckpoint();
                 } catch (e) { 
                     console.error(e);
                 }
@@ -158,16 +246,32 @@
 
             return (
                 <div className="min-h-screen flex flex-col bg-black">
+                    <div className="scanline"></div>
+                    
+                    {checkpointMsg && <div className="checkpoint-msg">{checkpointMsg}</div>}
+
                     <header className="border-b-2 border-[#111] p-6 flex justify-between items-center bg-black/90 backdrop-blur-md sticky top-0 z-50">
                         <div className="flex items-center gap-4">
-                             <DinoLogo />
-                             <h1 className="text-[12px] md:text-lg text-white tracking-tighter uppercase font-bold">BAANDA</h1>
+                             <DinoLogo 
+                                onClick={triggerCheckpoint} 
+                                onLongPress={() => setView(isAdmin ? 'admin_panel' : 'admin_login')} 
+                             />
+                             <div className="flex flex-col">
+                                <h1 className="text-[12px] md:text-lg text-white tracking-tighter uppercase font-bold">BAANDA</h1>
+                                <span className="text-[5px] text-[#444] tracking-widest">{isAdmin ? 'ADMIN_MODE_ACTIVE' : 'SYS_V2.0.7_STABLE'}</span>
+                             </div>
                              <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 loading-pulse' : 'bg-green-500'}`}></div>
                         </div>
-                        <div className="text-[6px] text-[#444] uppercase hidden md:block tracking-[3px]">Mission Control Center</div>
+                        <div className="text-right">
+                            {isAdmin && (
+                                <button onClick={() => {setIsAdmin(false); setView('home');}} className="text-[6px] text-red-500 border border-red-950 px-2 py-1 mb-1 block uppercase">Log_Out</button>
+                            )}
+                            <div className="text-[6px] text-[#444] uppercase hidden md:block tracking-[3px]">Mission Control Center</div>
+                            <div className="text-[5px] text-[#222] mt-1 hidden md:block uppercase">Encrypted_Sync: ACTIVE</div>
+                        </div>
                     </header>
 
-                    {view === 'home' ? (
+                    {view === 'home' && (
                         <>
                             <nav className="flex p-4 gap-4 overflow-x-auto bg-black border-b border-[#111] scrollbar-hide sticky top-[76px] z-40">
                                 {Object.keys(CATEGORIES).map(k => (
@@ -214,7 +318,9 @@
                                 )}
                             </main>
                         </>
-                    ) : (
+                    )}
+
+                    {view === 'add' && (
                         <main className="p-6 max-w-xl mx-auto w-full border-2 border-[#ff00ff] my-8 bg-black animate-in zoom-in duration-200 shadow-[10px_10px_0px_#440044]">
                             <h2 className="text-[#ff00ff] mb-8 text-center uppercase tracking-[4px] text-[10px]">Nova Operacija</h2>
                             <form onSubmit={saveMission} className="space-y-6">
@@ -284,6 +390,74 @@
                                 </button>
                                 <button type="button" onClick={() => setView('home')} className="w-full text-[#333] py-2 text-[8px] uppercase hover:text-[#ff00ff] transition-colors">Prekini</button>
                             </form>
+                        </main>
+                    )}
+
+                    {view === 'admin_login' && (
+                        <main className="flex-grow flex items-center justify-center p-6">
+                            <div className="max-w-xs w-full border-2 border-red-500 p-8 bg-black shadow-[10px_10px_0px_#440000]">
+                                <h2 className="text-red-500 text-[8px] mb-6 text-center tracking-widest uppercase">Admin_Auth_Required</h2>
+                                <form onSubmit={handleAdminLogin} className="space-y-4">
+                                    <input 
+                                        type="password" 
+                                        placeholder="SUDO_KEY"
+                                        className="w-full bg-black border-2 border-red-900 p-4 text-center text-red-500 text-[10px] outline-none focus:border-red-500"
+                                        value={adminPassInput}
+                                        onChange={e => setAdminPassInput(e.target.value)}
+                                        autoFocus
+                                    />
+                                    <button className="w-full bg-red-600 text-white p-3 text-[8px] uppercase font-bold shadow-[4px_4px_0px_#440000] active:translate-y-1 active:shadow-none">Authorize</button>
+                                    <button type="button" onClick={() => setView('home')} className="w-full text-gray-700 text-[6px] uppercase pt-2">Cancel</button>
+                                </form>
+                            </div>
+                        </main>
+                    )}
+
+                    {view === 'admin_panel' && isAdmin && (
+                        <main className="p-6 max-w-4xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
+                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
+                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Frequencies_Active</div>
+                                    <div className="text-xl text-[#00ff41]">{ads.length}</div>
+                                </div>
+                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
+                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Uptime_Status</div>
+                                    <div className="text-xl text-white">NOMINAL</div>
+                                </div>
+                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
+                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Admin_Status</div>
+                                    <div className="text-xl text-red-500">ROOT</div>
+                                </div>
+                             </div>
+
+                             <div className="space-y-4">
+                                <h3 className="text-[8px] text-white border-b border-[#222] pb-2 uppercase tracking-widest">Entry_Management</h3>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-[8px]">
+                                        <thead className="bg-[#111] text-[#444]">
+                                            <tr>
+                                                <th className="p-3 uppercase">Nick</th>
+                                                <th className="p-3 uppercase">Category</th>
+                                                <th className="p-3 uppercase">Status</th>
+                                                <th className="p-3 uppercase text-right">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-[#111]">
+                                            {ads.map(ad => (
+                                                <tr key={ad.id} className="hover:bg-[#050505]">
+                                                    <td className="p-3 text-white">@{ad.nick}</td>
+                                                    <td className="p-3 text-gray-500">{ad.category}</td>
+                                                    <td className="p-3 text-green-800">ENCRYPTED</td>
+                                                    <td className="p-3 text-right">
+                                                        <button onClick={() => deleteMission(ad.id)} className="text-red-500 border border-red-950 px-2 py-1 hover:bg-red-950 transition-colors uppercase">Terminate</button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                             </div>
+                             <button onClick={() => setView('home')} className="w-full py-4 text-[#333] border border-[#111] text-[8px] uppercase hover:text-white">Exit Control Panel</button>
                         </main>
                     )}
 
