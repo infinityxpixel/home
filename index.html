@@ -1,478 +1,308 @@
 <!DOCTYPE html>
-<html lang="hr">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baanda - Mission Control</title>
-    
-    <!-- Favicon: Little Green 8-bit Dinosaur -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z' fill='%2300ff41'/><path d='M14 6H16V8H14V6Z' fill='black'/></svg>" type="image/svg+xml">
-
-    <!-- React & Tailwind CDNs -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <title>Infinity Pixel | Enterprise Automation & Neural Systems</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Firebase Libraries -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Press Start 2P', cursive; 
-            background-color: #000; 
-            color: #eee; 
-            overflow-x: hidden;
-        }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        @keyframes pulse-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .loading-pulse { animation: pulse-green 1s infinite; }
-        .dino-logo { width: 32px; height: 32px; image-rendering: pixelated; }
-        
-        @keyframes scanline {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-        .scanline {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 2px;
-            background: rgba(0, 255, 65, 0.1);
-            opacity: 0.5;
-            z-index: 100;
-            pointer-events: none;
-            animation: scanline 8s linear infinite;
+        :root {
+            --brand-primary: #a855f7;
+            --brand-secondary: #3b82f6;
+            --surface-0: #020617;
+            --surface-1: #070e20;
+            --border-alpha: rgba(255, 255, 255, 0.05);
+            --font-main: 'Ubuntu Mono', monospace;
         }
 
-        .captcha-box { 
-            background: repeating-linear-gradient(45deg, #0a0a0a, #0a0a0a 10px, #111 10px, #111 20px);
-            font-family: monospace;
-            letter-spacing: 8px;
-            user-select: none;
+        body {
+            font-family: var(--font-main);
+            background-color: var(--surface-0);
+            color: #f1f5f9;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
         }
-        .mission-card {
-            background-color: #050505;
-            border: 2px solid #111;
-            transition: all 0.2s ease;
+
+        /* Technical Grid Background */
+        .bg-grid-premium {
+            background-size: 60px 60px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
         }
-        .mission-card:hover {
-            border-color: #333;
+
+        #spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle 800px at var(--x, 50%) var(--y, 50%), rgba(168, 85, 247, 0.05), transparent 80%);
+            z-index: 1;
+            will-change: background;
+        }
+
+        .glass-navbar {
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-alpha);
+        }
+
+        .bento-card {
+            background: linear-gradient(180deg, rgba(30, 41, 59, 0.2) 0%, rgba(15, 23, 42, 0.05) 100%);
+            border: 1px solid var(--border-alpha);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+
+        .bento-card:hover {
+            border-color: rgba(168, 85, 247, 0.3);
+            background: rgba(30, 41, 59, 0.3);
             transform: translateY(-2px);
         }
-        input, select, textarea {
-            background-color: #000 !important;
+
+        .text-gradient-white {
+            background: linear-gradient(180deg, #FFFFFF 0%, #64748B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        /* Checkpoint notification style */
-        .checkpoint-msg {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #00ff41;
-            color: black;
-            padding: 10px 20px;
-            font-size: 8px;
-            z-index: 1000;
-            border: 4px solid #004411;
-            animation: fade-in-out 2s forwards;
+        .shimmer-btn {
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+            color: #000;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
         }
 
-        @keyframes fade-in-out {
-            0% { opacity: 0; transform: translate(-50%, 20px); }
-            15% { opacity: 1; transform: translate(-50%, 0px); }
-            85% { opacity: 1; transform: translate(-50%, 0px); }
-            100% { opacity: 0; transform: translate(-50%, -20px); }
+        .shimmer-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            transform: rotate(25deg);
+            transition: 0.8s;
         }
+
+        .shimmer-btn:hover::after {
+            left: 150%;
+        }
+
+        .shimmer-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px -5px rgba(255, 255, 255, 0.1);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+            will-change: opacity, transform;
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Technical Indicator */
+        .system-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #a855f7;
+            box-shadow: 0 0 10px #a855f7;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: var(--surface-0); }
+        ::-webkit-scrollbar-thumb { background: #1e293b; }
     </style>
-
-    <script type="text/babel">
-        const firebaseConfig = {
-            apiKey: "AIzaSyDHUOomjTx1BpWEsSYU2lxqbh6P6zRY7TM",
-            authDomain: "baanda.firebaseapp.com",
-            projectId: "baanda",
-            storageBucket: "baanda.firebasestorage.app",
-            messagingSenderId: "285288741018",
-            appId: "1:285288741018:web:655d834944da86f6534723"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
-        const MASTER_KEY = "BAANDA_MISSION_KEY_2026";
-        const ADMIN_PASS = "sudo1984";
-        const CATEGORIES = {
-            SVE: { label: 'SVE', color: '#ffffff' },
-            SPORT: { label: 'SPORT', color: '#00ff41' },
-            DRUZENJE: { label: 'DRUŽENJE', color: '#ff00ff' },
-            IZLASCI: { label: 'IZLASCI', color: '#00ccff' }
-        };
-
-        async function getKey() {
-            const encoder = new TextEncoder();
-            const keyMaterial = encoder.encode(MASTER_KEY.padEnd(32, '0'));
-            return await window.crypto.subtle.importKey("raw", keyMaterial, "AES-GCM", false, ["encrypt", "decrypt"]);
-        }
-
-        async function encryptData(data) {
-            const encoder = new TextEncoder();
-            const encodedData = encoder.encode(JSON.stringify(data));
-            const key = await getKey();
-            const iv = window.crypto.getRandomValues(new Uint8Array(12));
-            const encrypted = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encodedData);
-            return {
-                iv: btoa(String.fromCharCode(...new Uint8Array(iv))),
-                content: btoa(String.fromCharCode(...new Uint8Array(encrypted)))
-            };
-        }
-
-        async function decryptData(ivB64, cipherB64) {
-            try {
-                const key = await getKey();
-                const iv = new Uint8Array(atob(ivB64).split("").map(c => c.charCodeAt(0)));
-                const cipher = new Uint8Array(atob(cipherB64).split("").map(c => c.charCodeAt(0)));
-                const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
-                return JSON.parse(new TextDecoder().decode(decrypted));
-            } catch (e) { return null; }
-        }
-
-        const DinoLogo = ({ onLongPress, onClick }) => {
-            const [timer, setTimer] = React.useState(null);
-
-            const handleStart = () => {
-                const t = setTimeout(onLongPress, 3000);
-                setTimer(t);
-            };
-            const handleEnd = () => {
-                if (timer) {
-                    clearTimeout(timer);
-                    setTimer(null);
-                    onClick();
-                }
-            };
-
-            return (
-                <svg 
-                    viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" 
-                    className="dino-logo cursor-pointer active:scale-90 transition-transform select-none"
-                    onMouseDown={handleStart} onMouseUp={handleEnd} onMouseLeave={handleEnd}
-                    onTouchStart={handleStart} onTouchEnd={handleEnd}
-                >
-                    <path d="M12 2H18V4H20V6H22V12H20V14H18V16H16V18H14V20H12V22H4V20H2V10H4V8H6V6H8V4H12V2Z" fill="#00ff41"/>
-                    <path d="M14 6H16V8H14V6Z" fill="black"/><path d="M6 12H8V14H6V12Z" fill="#008021"/><path d="M10 14H12V16H10V14Z" fill="#008021"/>
-                </svg>
-            );
-        };
-
-        const { useState, useEffect, useMemo } = React;
-
-        function App() {
-            const [ads, setAds] = useState([]);
-            const [loading, setLoading] = useState(true);
-            const [view, setView] = useState('home'); // home, add, admin_login, admin_panel
-            const [filter, setFilter] = useState('SVE');
-            const [checkpointMsg, setCheckpointMsg] = useState(null);
-            const [adminPassInput, setAdminPassInput] = useState('');
-            const [isAdmin, setIsAdmin] = useState(false);
-            const [form, setForm] = useState({ nick: '', msg: '', contactType: 'MOBITEL', contactVal: '', category: 'SPORT', location: 'ZAGREB' });
-            
-            const [captchaCode, setCaptchaCode] = useState('');
-            const [userCaptcha, setUserCaptcha] = useState('');
-            const genCaptcha = () => setCaptchaCode(Math.floor(1000 + Math.random() * 9000).toString());
-
-            const triggerCheckpoint = () => {
-                setCheckpointMsg(`CHECKPOINT_SAVED: ${new Date().toLocaleTimeString()}`);
-                setTimeout(() => setCheckpointMsg(null), 2000);
-            };
-
-            const handleAdminLogin = (e) => {
-                e.preventDefault();
-                if (adminPassInput === ADMIN_PASS) {
-                    setIsAdmin(true);
-                    setView('admin_panel');
-                    setAdminPassInput('');
-                    triggerCheckpoint();
-                } else {
-                    setCheckpointMsg("ACCESS_DENIED: WRONG_KEY");
-                    setAdminPassInput('');
-                }
-            };
-
-            const deleteMission = async (id) => {
-                if (confirm("Terminate mission entry forever?")) {
-                    await db.collection("missions").doc(id).delete();
-                    setCheckpointMsg("ENTRY_DELETED");
-                }
-            };
-
-            useEffect(() => {
-                let unsubscribe;
-                auth.signInAnonymously().then(() => {
-                    unsubscribe = db.collection("missions").orderBy("createdAt", "desc").onSnapshot(async (snap) => {
-                        const items = await Promise.all(snap.docs.map(async d => {
-                            const data = d.data();
-                            if (!data.iv || !data.content) return null;
-                            const decrypted = await decryptData(data.iv, data.content);
-                            return decrypted ? { ...decrypted, id: d.id } : null;
-                        }));
-                        setAds(items.filter(Boolean));
-                        setLoading(false);
-                    });
-                });
-                return () => unsubscribe && unsubscribe();
-            }, []);
-
-            useEffect(() => { if(view === 'add') genCaptcha(); }, [view]);
-
-            const saveMission = async (e) => {
-                e.preventDefault();
-                if (userCaptcha !== captchaCode) return;
-                try {
-                    const encrypted = await encryptData({ ...form, createdAt: Date.now() });
-                    await db.collection("missions").add({ ...encrypted, createdAt: Date.now() });
-                    setView('home');
-                    setUserCaptcha('');
-                    triggerCheckpoint();
-                } catch (e) { 
-                    console.error(e);
-                }
-            };
-
-            const filteredAds = useMemo(() => filter === 'SVE' ? ads : ads.filter(a => a.category === filter), [ads, filter]);
-
-            return (
-                <div className="min-h-screen flex flex-col bg-black">
-                    <div className="scanline"></div>
-                    
-                    {checkpointMsg && <div className="checkpoint-msg">{checkpointMsg}</div>}
-
-                    <header className="border-b-2 border-[#111] p-6 flex justify-between items-center bg-black/90 backdrop-blur-md sticky top-0 z-50">
-                        <div className="flex items-center gap-4">
-                             <DinoLogo 
-                                onClick={triggerCheckpoint} 
-                                onLongPress={() => setView(isAdmin ? 'admin_panel' : 'admin_login')} 
-                             />
-                             <div className="flex flex-col">
-                                <h1 className="text-[12px] md:text-lg text-white tracking-tighter uppercase font-bold">BAANDA</h1>
-                                <span className="text-[5px] text-[#444] tracking-widest">{isAdmin ? 'ADMIN_MODE_ACTIVE' : 'SYS_V2.0.7_STABLE'}</span>
-                             </div>
-                             <div className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 loading-pulse' : 'bg-green-500'}`}></div>
-                        </div>
-                        <div className="text-right">
-                            {isAdmin && (
-                                <button onClick={() => {setIsAdmin(false); setView('home');}} className="text-[6px] text-red-500 border border-red-950 px-2 py-1 mb-1 block uppercase">Log_Out</button>
-                            )}
-                            <div className="text-[6px] text-[#444] uppercase hidden md:block tracking-[3px]">Mission Control Center</div>
-                            <div className="text-[5px] text-[#222] mt-1 hidden md:block uppercase">Encrypted_Sync: ACTIVE</div>
-                        </div>
-                    </header>
-
-                    {view === 'home' && (
-                        <>
-                            <nav className="flex p-4 gap-4 overflow-x-auto bg-black border-b border-[#111] scrollbar-hide sticky top-[76px] z-40">
-                                {Object.keys(CATEGORIES).map(k => (
-                                    <button key={k} onClick={() => setFilter(k)} 
-                                        className={`px-4 py-2 border-2 transition-all whitespace-nowrap text-[8px] ${filter === k ? 'border-white text-white' : 'border-[#111] text-[#444]'}`}
-                                        style={filter === k ? {boxShadow: `3px 3px 0px ${CATEGORIES[k].color}`} : {}}>
-                                        {CATEGORIES[k].label}
-                                    </button>
-                                ))}
-                            </nav>
-
-                            <main className="p-4 max-w-2xl mx-auto w-full space-y-6 flex-grow">
-                                <button onClick={() => setView('add')} className="w-full bg-[#00ff41] text-black p-6 shadow-[6px_6px_0px_#004411] font-bold active:translate-y-1 active:shadow-none transition-all text-[10px] uppercase">
-                                    + NOVA MISIJA
-                                </button>
-                                
-                                {loading ? (
-                                    <div className="text-center py-20 text-[#222] text-[8px] tracking-widest">SCANNING_FREQUENCIES...</div>
-                                ) : filteredAds.length === 0 ? (
-                                    <div className="text-center py-20 text-[#111] text-[8px] tracking-widest">ZERO_MISSIONS_LOGGED</div>
-                                ) : (
-                                    filteredAds.map(ad => (
-                                        <div key={ad.id} className="mission-card p-6 animate-in fade-in slide-in-from-bottom-4" style={{borderLeft: `4px solid ${CATEGORIES[ad.category]?.color || '#fff'}`}}>
-                                            <div className="flex justify-between mb-4 text-[7px] uppercase font-bold tracking-widest">
-                                                <span style={{color: CATEGORIES[ad.category]?.color}} className="bg-[#111] px-2 py-1 border border-[#222]">
-                                                    {ad.category}
-                                                </span>
-                                                <span className="text-[#444]">{ad.location}</span>
-                                            </div>
-                                            <div className="mb-3 text-[#555] text-[8px]">
-                                                <span className="mr-1 text-[#00ff41]">@</span>
-                                                {ad.nick}
-                                            </div>
-                                            <p className="text-[#bbb] mb-6 leading-relaxed text-[10px] break-words">
-                                                {ad.msg}
-                                            </p>
-                                            <div className="text-right pt-4 border-t border-[#111]">
-                                                <span className="bg-[#000] px-3 py-2 text-[#00ff41] border border-[#222] font-mono text-[9px] tracking-widest shadow-[2px_2px_0px_#004411]">
-                                                    {ad.contactVal}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </main>
-                        </>
-                    )}
-
-                    {view === 'add' && (
-                        <main className="p-6 max-w-xl mx-auto w-full border-2 border-[#ff00ff] my-8 bg-black animate-in zoom-in duration-200 shadow-[10px_10px_0px_#440044]">
-                            <h2 className="text-[#ff00ff] mb-8 text-center uppercase tracking-[4px] text-[10px]">Nova Operacija</h2>
-                            <form onSubmit={saveMission} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[#444] text-[7px] block uppercase">Identitet:</label>
-                                        <input maxLength="15" className="w-full bg-black border-2 border-[#111] p-4 outline-none focus:border-[#ff00ff] text-white text-[9px]" onChange={e => setForm({...form, nick: e.target.value})} required />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[#444] text-[7px] block uppercase">Sektor:</label>
-                                        <select className="w-full bg-black border-2 border-[#111] p-4 outline-none text-[#ff00ff] appearance-none text-[9px]" value={form.location} onChange={e => setForm({...form, location: e.target.value})}>
-                                            <option value="ZAGREB">ZAGREB</option>
-                                            <option value="SPLIT">SPLIT</option>
-                                            <option value="OSTALO">OSTALO</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[#444] text-[7px] block uppercase">Tip Misije:</label>
-                                    <select className="w-full bg-black border-2 border-[#111] p-4 outline-none text-[#ff00ff] appearance-none text-[9px]" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-                                        {Object.keys(CATEGORIES).filter(k => k !== 'SVE').map(k => <option key={k} value={k}>{CATEGORIES[k].label}</option>)}
-                                    </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[#444] text-[7px] block uppercase">Detalji:</label>
-                                    <textarea maxLength="250" placeholder="..." className="w-full bg-black border-2 border-[#111] p-4 h-32 outline-none focus:border-[#ff00ff] text-white text-[9px] leading-relaxed" onChange={e => setForm({...form, msg: e.target.value})} required></textarea>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[#444] text-[7px] block uppercase">Kontakt kanal:</label>
-                                    <div className="flex gap-2 mb-2">
-                                        <button type="button" onClick={() => setForm({...form, contactType: 'MOBITEL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] transition-all ${form.contactType === 'MOBITEL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>MOBITEL</button>
-                                        <button type="button" onClick={() => setForm({...form, contactType: 'EMAIL', contactVal: ''})} className={`flex-1 p-3 border-2 text-[7px] transition-all ${form.contactType === 'EMAIL' ? 'border-[#ff00ff] text-[#ff00ff]' : 'border-[#111] text-[#444]'}`}>EMAIL</button>
-                                    </div>
-                                    <input 
-                                        className="w-full bg-black border-2 border-[#111] p-4 outline-none focus:border-[#ff00ff] text-white text-[9px]" 
-                                        value={form.contactVal}
-                                        onChange={e => setForm({...form, contactVal: e.target.value})} 
-                                        placeholder={form.contactType === 'MOBITEL' ? "Npr. 091 234..." : "primjer@mail.com"}
-                                        required 
-                                    />
-                                </div>
-
-                                <div className="border-2 border-[#111] p-4 space-y-3 bg-[#050505]">
-                                    <div className="flex justify-between items-center">
-                                        <label className="text-[#444] text-[7px] uppercase">Human_Check:</label>
-                                        <span onClick={genCaptcha} className="text-[#333] text-[6px] cursor-pointer hover:text-[#ff00ff] underline">REFRESH</span>
-                                    </div>
-                                    <div className="flex gap-4 items-center">
-                                        <div className="captcha-box flex-1 h-12 flex items-center justify-center text-[#ff00ff] text-xl font-bold italic tracking-widest border border-[#111]">
-                                            {captchaCode}
-                                        </div>
-                                        <input 
-                                            placeholder="????"
-                                            maxLength="4"
-                                            className="w-20 bg-black border-2 border-[#111] h-12 text-center text-white outline-none focus:border-[#ff00ff] text-[12px]"
-                                            value={userCaptcha}
-                                            onChange={e => setUserCaptcha(e.target.value.replace(/\D/g,''))}
-                                        />
-                                    </div>
-                                </div>
-
-                                <button 
-                                    disabled={userCaptcha !== captchaCode}
-                                    className={`w-full p-5 font-bold shadow-[6px_6px_0px_#8b008b] active:translate-y-1 active:shadow-none uppercase text-[10px] transition-all ${userCaptcha === captchaCode ? 'bg-[#ff00ff] text-white' : 'bg-[#111] text-[#222] cursor-not-allowed shadow-none'}`}
-                                >
-                                    Lansiraj
-                                </button>
-                                <button type="button" onClick={() => setView('home')} className="w-full text-[#333] py-2 text-[8px] uppercase hover:text-[#ff00ff] transition-colors">Prekini</button>
-                            </form>
-                        </main>
-                    )}
-
-                    {view === 'admin_login' && (
-                        <main className="flex-grow flex items-center justify-center p-6">
-                            <div className="max-w-xs w-full border-2 border-red-500 p-8 bg-black shadow-[10px_10px_0px_#440000]">
-                                <h2 className="text-red-500 text-[8px] mb-6 text-center tracking-widest uppercase">Admin_Auth_Required</h2>
-                                <form onSubmit={handleAdminLogin} className="space-y-4">
-                                    <input 
-                                        type="password" 
-                                        placeholder="SUDO_KEY"
-                                        className="w-full bg-black border-2 border-red-900 p-4 text-center text-red-500 text-[10px] outline-none focus:border-red-500"
-                                        value={adminPassInput}
-                                        onChange={e => setAdminPassInput(e.target.value)}
-                                        autoFocus
-                                    />
-                                    <button className="w-full bg-red-600 text-white p-3 text-[8px] uppercase font-bold shadow-[4px_4px_0px_#440000] active:translate-y-1 active:shadow-none">Authorize</button>
-                                    <button type="button" onClick={() => setView('home')} className="w-full text-gray-700 text-[6px] uppercase pt-2">Cancel</button>
-                                </form>
-                            </div>
-                        </main>
-                    )}
-
-                    {view === 'admin_panel' && isAdmin && (
-                        <main className="p-6 max-w-4xl mx-auto w-full space-y-8 animate-in fade-in duration-500">
-                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
-                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Frequencies_Active</div>
-                                    <div className="text-xl text-[#00ff41]">{ads.length}</div>
-                                </div>
-                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
-                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Uptime_Status</div>
-                                    <div className="text-xl text-white">NOMINAL</div>
-                                </div>
-                                <div className="border border-green-900 bg-[#050505] p-4 text-center">
-                                    <div className="text-[6px] text-[#444] mb-2 uppercase">Admin_Status</div>
-                                    <div className="text-xl text-red-500">ROOT</div>
-                                </div>
-                             </div>
-
-                             <div className="space-y-4">
-                                <h3 className="text-[8px] text-white border-b border-[#222] pb-2 uppercase tracking-widest">Entry_Management</h3>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-[8px]">
-                                        <thead className="bg-[#111] text-[#444]">
-                                            <tr>
-                                                <th className="p-3 uppercase">Nick</th>
-                                                <th className="p-3 uppercase">Category</th>
-                                                <th className="p-3 uppercase">Status</th>
-                                                <th className="p-3 uppercase text-right">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-[#111]">
-                                            {ads.map(ad => (
-                                                <tr key={ad.id} className="hover:bg-[#050505]">
-                                                    <td className="p-3 text-white">@{ad.nick}</td>
-                                                    <td className="p-3 text-gray-500">{ad.category}</td>
-                                                    <td className="p-3 text-green-800">ENCRYPTED</td>
-                                                    <td className="p-3 text-right">
-                                                        <button onClick={() => deleteMission(ad.id)} className="text-red-500 border border-red-950 px-2 py-1 hover:bg-red-950 transition-colors uppercase">Terminate</button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                             </div>
-                             <button onClick={() => setView('home')} className="w-full py-4 text-[#333] border border-[#111] text-[8px] uppercase hover:text-white">Exit Control Panel</button>
-                        </main>
-                    )}
-
-                    <footer className="p-10 text-center text-[#111] text-[6px] tracking-[4px] uppercase mt-auto">
-                        Baanda // P2P_Encrypted_Network // 2026
-                    </footer>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-grid-premium">
+    <div id="spotlight"></div>
+
+    <!-- Executive Navigation -->
+    <nav class="fixed w-full z-[100] top-0 glass-navbar">
+        <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-4 group">
+                <div class="w-8 h-8 bg-purple-600 rounded-sm flex items-center justify-center">
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <span class="text-sm font-bold tracking-[0.4em] uppercase">Infinity Pixel</span>
+            </a>
+            
+            <div class="flex items-center gap-8">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1 border border-white/5 bg-white/[0.02] rounded-sm">
+                    <div class="system-dot"></div>
+                    <span class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Live_Node:v2.0</span>
+                </div>
+                <a href="mailto:infinitypixelhub@proton.me" class="text-[11px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
+                    Establish Contact
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex flex-col items-center justify-center pt-24 px-6">
+        <div class="max-w-4xl mx-auto text-center z-10">
+            <div class="reveal mb-12">
+                <span class="text-[10px] font-bold uppercase tracking-[0.6em] text-purple-500/80">Autonomous Enterprise Systems</span>
+            </div>
+            
+            <h1 class="reveal text-5xl md:text-8xl font-bold tracking-tight leading-[0.95] mb-12 text-gradient-white uppercase">
+                Redefining <br>
+                Scale Through <br>
+                <span class="text-purple-600">Intelligence.</span>
+            </h1>
+            
+            <p class="reveal text-gray-500 text-lg md:text-xl max-w-2xl mx-auto mb-16 leading-relaxed font-medium tracking-tight">
+                Architecting elite neural workflows for the world's most demanding operations. We bridge the gap between complex data and autonomous execution.
+            </p>
+
+            <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-8">
+                <a href="mailto:infinitypixelhub@proton.me" class="shimmer-btn px-14 py-5 text-xs font-bold uppercase tracking-[0.3em] w-full sm:w-auto">
+                    Initiate Deployment
+                </a>
+                <div class="text-[10px] text-gray-600 uppercase tracking-widest font-bold">
+                    // Deployment Time: &lt; 14 Days
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 reveal opacity-30">
+            <div class="w-px h-12 bg-gradient-to-b from-purple-500 to-transparent"></div>
+        </div>
+    </section>
+
+    <!-- Capabilities Grid -->
+    <section class="py-40 relative">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="grid md:grid-cols-3 gap-px bg-white/[0.03] border border-white/[0.03]">
+                <!-- Item 1 -->
+                <div class="reveal bg-slate-950/40 p-16 space-y-8">
+                    <span class="text-purple-500 font-bold text-xs tracking-widest uppercase">01 //</span>
+                    <h3 class="text-2xl font-bold uppercase tracking-tight">Neural <br>Orchestration</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">High-velocity logic frameworks that manage end-to-end business operations with zero human latency.</p>
+                </div>
+                <!-- Item 2 -->
+                <div class="reveal bg-slate-950/40 p-16 space-y-8" style="transition-delay: 100ms;">
+                    <span class="text-purple-500 font-bold text-xs tracking-widest uppercase">02 //</span>
+                    <h3 class="text-2xl font-bold uppercase tracking-tight">Agentic <br>Workflows</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Deployment of specialized LLM agents designed for mission-critical synthesis and lead intelligence.</p>
+                </div>
+                <!-- Item 3 -->
+                <div class="reveal bg-slate-950/40 p-16 space-y-8" style="transition-delay: 200ms;">
+                    <span class="text-purple-500 font-bold text-xs tracking-widest uppercase">03 //</span>
+                    <h3 class="text-2xl font-bold uppercase tracking-tight">Sentinel <br>Scrapers</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Real-time surveillance systems that track market shifts and competitor data with surgical precision.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Call to Action -->
+    <section class="py-60 relative overflow-hidden">
+        <div class="max-w-4xl mx-auto px-8 text-center relative z-10">
+            <div class="reveal inline-block px-4 py-1 border border-purple-500/20 bg-purple-500/5 rounded-full mb-10">
+                <span class="text-[9px] font-bold uppercase tracking-[0.4em] text-purple-400">Strictly Institutional</span>
+            </div>
+            <h2 class="reveal text-4xl md:text-7xl font-bold mb-12 tracking-tighter text-gradient-white uppercase">Initialize <br>Partnership.</h2>
+            <p class="reveal text-gray-500 text-lg mb-16 max-w-xl mx-auto font-medium">
+                Direct access to our lead architects for technical review and infrastructure auditing.
+            </p>
+            
+            <div class="reveal">
+                <a href="mailto:infinitypixelhub@proton.me" class="shimmer-btn px-20 py-8 text-sm font-bold uppercase tracking-[0.4em] shadow-3xl shadow-purple-500/10 mb-12">
+                    Send Project Brief
+                </a>
+                
+                <div class="flex items-center justify-center gap-4 text-gray-600 font-bold text-[10px] uppercase tracking-widest mt-12 opacity-50 hover:opacity-100 transition-opacity">
+                    <span>infinitypixelhub@proton.me</span>
+                    <div class="w-1 h-1 bg-gray-700 rounded-full"></div>
+                    <span>PGP Secured</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Background Lighting -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-purple-600/[0.02] blur-[150px] pointer-events-none"></div>
+    </section>
+
+    <!-- Minimal Footer -->
+    <footer class="py-20 border-t border-white/[0.03]">
+        <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-10">
+            <div class="flex items-center gap-4 grayscale opacity-40">
+                <div class="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
+                    <svg class="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                </div>
+                <span class="text-[10px] font-bold tracking-[0.5em] uppercase">Infinity Pixel</span>
+            </div>
+            
+            <div class="text-[9px] text-gray-700 font-bold uppercase tracking-[0.4em]">
+                &copy; 2024 IP.SYS_RESERVED // BLD_V2.5
+            </div>
+
+            <div class="flex gap-10 text-[9px] font-bold text-gray-600 uppercase tracking-widest">
+                <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                <a href="#" class="hover:text-white transition-colors">Terms</a>
+                <a href="#" class="hover:text-white transition-colors">Github</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // High-Performance Cursor Spotlight
+        const spotlight = document.getElementById('spotlight');
+        document.addEventListener('mousemove', e => {
+            window.requestAnimationFrame(() => {
+                spotlight.style.setProperty('--x', `${e.clientX}px`);
+                spotlight.style.setProperty('--y', `${e.clientY}px`);
+            });
+        });
+
+        // Intersection Observer for Section Reveals
+        const revealOptions = { threshold: 0.15, rootMargin: '0px 0px -100px 0px' };
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, revealOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+        // Console Technical Identity
+        console.log("%c INFINITY PIXEL %c PRODUCTION READY ", 
+            "background: #a855f7; color: white; font-weight: bold; padding: 2px 8px; border-radius: 2px 0 0 2px;", 
+            "background: #1e293b; color: white; padding: 2px 8px; border-radius: 0 2px 2px 0;"
+        );
+    </script>
 </body>
 </html>
