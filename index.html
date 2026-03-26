@@ -3,40 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity Pixel | Building the Spectrum</title>
+    <title>Infinity Pixel</title>
+    <!-- Favicon using the Prism Logo concept -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='25' y='25' width='50' height='50' fill='white' rx='5'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700&display=swap');
-
-        :root {
-            --spectral-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #020202;
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ececec;
             margin: 0;
             overflow-x: hidden;
         }
 
-        /* The Prism Logo - A tiny square that breaks light */
+        /* Modest Prism Logo */
         .prism-wrapper {
             position: relative;
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
         }
 
         .prism-core {
             width: 100%;
             height: 100%;
-            background: #fff;
-            border-radius: 2px;
+            background: #ffffff;
+            border-radius: 1px;
             position: relative;
             z-index: 2;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
-            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.5s ease;
         }
 
         .spectrum-beam {
@@ -47,53 +44,53 @@
             width: 0;
             opacity: 0;
             transform-origin: left center;
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            filter: blur(1px);
+            transition: all 0.6s ease;
         }
 
         .prism-wrapper:hover .prism-core {
-            transform: rotate(45deg) scale(0.9);
-            background: #f0f0f0;
+            transform: scale(0.85);
+            background: #ffffff;
         }
 
         .prism-wrapper:hover .spectrum-beam {
-            width: 150px;
-            opacity: 0.7;
+            width: 80px;
+            opacity: 0.4;
         }
 
-        /* Spectral fan-out */
-        .beam-1 { transform: rotate(-40deg); background: #ff0000; transition-delay: 0.0s; }
-        .beam-2 { transform: rotate(-20deg); background: #ffff00; transition-delay: 0.05s; }
-        .beam-3 { transform: rotate(0deg);   background: #00ff00; transition-delay: 0.1s; }
-        .beam-4 { transform: rotate(20deg);  background: #0000ff; transition-delay: 0.15s; }
-        .beam-5 { transform: rotate(40deg);  background: #9400d3; transition-delay: 0.2s; }
+        .beam-1 { transform: rotate(-30deg); background: #ff4d4d; }
+        .beam-2 { transform: rotate(-10deg); background: #ffd11a; }
+        .beam-3 { transform: rotate(10deg);  background: #33ff77; }
+        .beam-4 { transform: rotate(30deg);  background: #3399ff; }
 
-        .hero-title {
-            letter-spacing: -0.04em;
-            line-height: 0.9;
+        /* Subtle Hero Typography */
+        .hero-text {
+            letter-spacing: -0.02em;
+            font-weight: 400;
         }
 
-        .cta-button {
-            position: relative;
-            overflow: hidden;
+        /* Quiet Interactive Cards */
+        .modest-card {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s ease;
+            position: relative;
         }
 
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: var(--spectral-gradient);
-            transition: left 0.5s ease;
-            z-index: -1;
-            opacity: 0.2;
+        .modest-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.01);
         }
 
-        .cta-button:hover::before {
-            left: 0;
+        .dot-indicator {
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .modest-card:hover .dot-indicator {
+            background: #fff;
         }
 
         .background-glow {
@@ -102,165 +99,124 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%);
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 80%);
             pointer-events: none;
             z-index: -1;
         }
 
-        /* Interactive Card Styling */
-        .spectrum-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .spectrum-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.04);
-        }
-
-        .card-glow {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: white;
-            filter: blur(60px);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
-
-        .spectrum-card:hover .card-glow {
-            opacity: 0.1;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes simpleFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .reveal {
             opacity: 0;
-            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: simpleFade 1.5s ease forwards;
+        }
+
+        .cta-link {
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            transition: border-color 0.3s ease;
+        }
+
+        .cta-link:hover {
+            border-color: rgba(255,255,255,1);
         }
     </style>
 </head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JEQV4G13R8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-JEQV4G13R8');
+</script>
 <body class="flex flex-col min-h-screen">
 
-    <div class="background-glow"></div>
+    <div class="background-glow" id="glow"></div>
 
-    <!-- Minimal Header -->
-    <header class="p-8 md:p-12 flex justify-between items-center w-full fixed top-0 z-50">
-        <div class="flex items-center gap-6 group">
+    <!-- Modest Header -->
+    <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50">
+        <div class="flex items-center gap-4 group">
             <div class="prism-wrapper">
                 <div class="spectrum-beam beam-1"></div>
                 <div class="spectrum-beam beam-2"></div>
                 <div class="spectrum-beam beam-3"></div>
                 <div class="spectrum-beam beam-4"></div>
-                <div class="spectrum-beam beam-5"></div>
                 <div class="prism-core"></div>
             </div>
-            <span class="font-bold text-sm tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 transition-opacity">
+            <span class="text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
                 Infinity Pixel
             </span>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow flex flex-col justify-center items-center px-6 pt-32 pb-20 text-center">
+    <!-- Content -->
+    <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20">
         
-        <!-- Hero Section -->
-        <div class="reveal" style="animation-delay: 0.1s">
-            <h1 class="hero-title text-6xl md:text-9xl font-bold mb-10">
-                Infinite Vision.<br>
-                <span class="opacity-20">Digital Reality.</span>
+        <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
+            <h1 class="hero-text text-4xl md:text-5xl mb-8">
+                Thoughtful software, <br>
+                <span class="opacity-40">carefully crafted.</span>
             </h1>
+            <p class="text-gray-500 font-light leading-relaxed md:px-20 text-base">
+                We are a small collective focused on building digital tools that balance simplicity with technical integrity.
+            </p>
         </div>
 
-        <p class="reveal max-w-xl text-gray-400 text-lg md:text-xl font-light mb-16 leading-relaxed" style="animation-delay: 0.2s">
-            A specialized software collective engineering high-performance solutions through the lens of precision and spectral innovation.
-        </p>
-
-        <!-- Interactive Spectrum Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mb-20 reveal" style="animation-delay: 0.3s">
-            <div class="spectrum-card p-8 rounded-lg text-left group">
-                <div class="card-glow"></div>
-                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 01</div>
-                <h3 class="text-xl font-bold mb-2">Mobile</h3>
-                <p class="text-sm text-gray-500 font-light leading-relaxed">Fluid native experiences that live in the pocket of the future.</p>
-                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+        <!-- Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mb-24 reveal" style="animation-delay: 0.4s">
+            <div class="modest-card p-10 rounded-sm">
+                <div class="dot-indicator mb-6"></div>
+                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">Stable and intuitive mobile applications for iOS and Android.</p>
             </div>
 
-            <div class="spectrum-card p-8 rounded-lg text-left group">
-                <div class="card-glow"></div>
-                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 02</div>
-                <h3 class="text-xl font-bold mb-2">Web</h3>
-                <p class="text-sm text-gray-500 font-light leading-relaxed">Architecting the decentralized and performant open web.</p>
-                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            <div class="modest-card p-10 rounded-sm">
+                <div class="dot-indicator mb-6"></div>
+                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">Clean, responsive web platforms built for longevity and speed.</p>
             </div>
 
-            <div class="spectrum-card p-8 rounded-lg text-left group">
-                <div class="card-glow"></div>
-                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 03</div>
-                <h3 class="text-xl font-bold mb-2">Analytics</h3>
-                <p class="text-sm text-gray-500 font-light leading-relaxed">Transforming raw noise into spectral clarity through data.</p>
-                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            <div class="modest-card p-10 rounded-sm">
+                <div class="dot-indicator mb-6"></div>
+                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">Clear visualizations and reporting to help understand your data.</p>
             </div>
 
-            <div class="spectrum-card p-8 rounded-lg text-left group">
-                <div class="card-glow"></div>
-                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 04</div>
-                <h3 class="text-xl font-bold mb-2">Games</h3>
-                <p class="text-sm text-gray-500 font-light leading-relaxed">Interactive worlds built on the edge of technical limits.</p>
-                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            <div class="modest-card p-10 rounded-sm">
+                <div class="dot-indicator mb-6"></div>
+                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">Creating fun and innovative games with engaging mechanics.</p>
             </div>
         </div>
 
-        <div class="reveal" style="animation-delay: 0.5s">
-            <a href="mailto:infinitypixelhub@proton.me" class="cta-button inline-block bg-white text-black px-12 py-5 rounded-sm font-bold tracking-widest uppercase text-sm hover:scale-105 active:scale-95 border border-white">
-                Start a Conversation
+        <div class="reveal" style="animation-delay: 0.6s">
+            <a href="mailto:infinitypixelhub@proton.me" class="cta-link pb-1 text-sm tracking-widest uppercase opacity-80 hover:opacity-100">
+                Contact the studio
             </a>
         </div>
 
     </main>
 
-    <!-- Footer Area -->
-    <footer class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-end gap-8 reveal" style="animation-delay: 0.6s">
-        <div class="text-left">
-            <div class="text-[10px] text-gray-600 uppercase tracking-[0.2em] mb-2">Primary Contact</div>
-            <a href="mailto:infinitypixelhub@proton.me" class="text-gray-400 hover:text-white transition-colors">
-                infinitypixelhub@proton.me
-            </a>
-        </div>
-        
-        <div class="text-right">
-            <div class="text-[10px] text-gray-600 uppercase tracking-[0.2em] mb-2">Global Operations</div>
-            <p class="text-gray-400">Distributed Collective</p>
+    <!-- Modest Footer -->
+    <footer class="p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 reveal text-[10px] tracking-widest text-gray-600 uppercase" style="animation-delay: 0.8s">
+        <div>&copy; 2024 Infinity Pixel</div>
+        <div class="flex gap-8">
+            <a href="mailto:infinitypixelhub@proton.me" class="hover:text-white transition-colors">Direct Inquiry</a>
+            <span>Studio / Remote</span>
         </div>
     </footer>
 
     <script>
-        // Subtle mouse tracking for the background glow
+        // Subtle mouse tracking for the background
+        const glow = document.getElementById('glow');
         document.addEventListener('mousemove', (e) => {
-            const glow = document.querySelector('.background-glow');
-            const x = e.clientX;
-            const y = e.clientY;
-            glow.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.04) 0%, transparent 70%)`;
-
-            // Interaction for cards
-            document.querySelectorAll('.spectrum-card').forEach(card => {
-                const rect = card.getBoundingClientRect();
-                const cardGlow = card.querySelector('.card-glow');
-                const localX = x - rect.left;
-                const localY = y - rect.top;
-                
-                cardGlow.style.left = `${localX - 50}px`;
-                cardGlow.style.top = `${localY - 50}px`;
-            });
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            glow.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.035) 0%, transparent 60%)`;
         });
     </script>
 </body>
