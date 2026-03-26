@@ -1,547 +1,267 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity Pixel | Software Automation & Time Engineering</title>
-    <!-- Favicon matching the site logo -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2' fill='black'/%3E%3Cpath d='M13 2L3 14h9l-1 8 10-12h-9l1-8z' fill='white'/%3E%3C/svg%3E">
-    
+    <title>Infinity Pixel | Breaking the Spectrum</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;400;700&display=swap');
+
         :root {
-            --brand-primary: #a855f7;
-            --brand-secondary: #3b82f6;
-            --surface-0: #020617;
-            --surface-1: #070e20;
-            --border-alpha: rgba(255, 255, 255, 0.05);
-            --font-main: 'Ubuntu Mono', monospace;
+            --spectral-gradient: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
         }
 
         body {
-            font-family: var(--font-main);
-            background-color: var(--surface-0);
-            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #020202;
+            color: #ffffff;
+            margin: 0;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            letter-spacing: -0.01em;
         }
 
-        .bg-grid-premium {
-            background-size: 60px 60px;
-            background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+        /* The Prism Logo - A tiny square that breaks light */
+        .prism-wrapper {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
         }
 
-        #spotlight {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            background: radial-gradient(circle 800px at var(--x, 50%) var(--y, 50%), rgba(168, 85, 247, 0.05), transparent 80%);
-            z-index: 1;
-            will-change: background;
+        .prism-core {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 2px;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .glass-navbar {
-            background: rgba(2, 6, 23, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border-alpha);
+        .spectrum-beam {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            height: 1px;
+            width: 0;
+            opacity: 0;
+            transform-origin: left center;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            filter: blur(1px);
         }
 
-        .text-gradient-white {
-            background: linear-gradient(180deg, #FFFFFF 0%, #64748B 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .prism-wrapper:hover .prism-core {
+            transform: rotate(45deg) scale(0.9);
+            background: #f0f0f0;
         }
 
-        .shimmer-btn {
+        .prism-wrapper:hover .spectrum-beam {
+            width: 150px;
+            opacity: 0.7;
+        }
+
+        /* Spectral fan-out */
+        .beam-1 { transform: rotate(-40deg); background: #ff0000; transition-delay: 0.0s; }
+        .beam-2 { transform: rotate(-20deg); background: #ffff00; transition-delay: 0.05s; }
+        .beam-3 { transform: rotate(0deg);   background: #00ff00; transition-delay: 0.1s; }
+        .beam-4 { transform: rotate(20deg);  background: #0000ff; transition-delay: 0.15s; }
+        .beam-5 { transform: rotate(40deg);  background: #9400d3; transition-delay: 0.2s; }
+
+        .hero-title {
+            letter-spacing: -0.04em;
+            line-height: 0.9;
+        }
+
+        .cta-button {
             position: relative;
             overflow: hidden;
-            background: #fff;
-            color: #000;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: inline-flex;
-            align-items: center; justify-content: center;
-            border-radius: 4px;
+            transition: all 0.4s ease;
         }
 
-        .shimmer-btn::after {
+        .cta-button::before {
             content: '';
-            position: absolute; top: -50%; left: -150%; width: 200%; height: 200%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-            transform: rotate(25deg);
-            transition: 0.8s;
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--spectral-gradient);
+            transition: left 0.5s ease;
+            z-index: -1;
+            opacity: 0.2;
         }
 
-        .shimmer-btn:hover::after { left: 150%; }
-        .shimmer-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 20px -5px rgba(168, 85, 247, 0.2); }
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        .background-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Interactive Card Styling */
+        .spectrum-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .spectrum-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .card-glow {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: white;
+            filter: blur(60px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .spectrum-card:hover .card-glow {
+            opacity: 0.1;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .reveal {
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s ease-out, transform 1s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .reveal.active { opacity: 1; transform: translateY(0); }
-
-        .system-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: #a855f7; box-shadow: 0 0 10px #a855f7;
-            animation: pulse-dot 2s infinite;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.5; }
-        }
-
-        .terminal-block {
-            background: rgba(15, 23, 42, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            padding: 2.5rem;
-            position: relative;
-        }
-
-        .pro-label { color: #22c55e; }
-
-        /* Chart Styles */
-        .chart-container {
-            background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.03), transparent);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Time Area Chart Animation */
-        .area-path {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            transition: stroke-dashoffset 3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        
-        .area-fill {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 2s ease-out 1s, transform 2s cubic-bezier(0.16, 1, 0.3, 1) 1s;
-        }
-
-        .radial-progress {
-            transform: rotate(-90deg);
-            transform-origin: 50% 50%;
-            stroke-dasharray: 282.7;
-            stroke-dashoffset: 282.7;
-            transition: stroke-dashoffset 2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes scan-line {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
-        .scanner::after {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            background: linear-gradient(90deg, transparent, #a855f7, transparent);
-            animation: scan-line 3s linear infinite;
+            animation: fadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
     </style>
 </head>
-<body class="bg-grid-premium">
-    <div id="spotlight"></div>
+<body class="flex flex-col min-h-screen">
 
-    <!-- Executive Navigation -->
-    <nav class="fixed w-full z-[100] top-0 glass-navbar">
-        <div class="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-4 group">
-                <div class="w-8 h-8 bg-purple-600 rounded-sm flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                    </svg>
-                </div>
-                <span class="text-sm font-bold tracking-[0.4em] uppercase">Infinity Pixel</span>
-            </a>
-            
-            <div class="flex items-center gap-8">
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1 border border-white/5 bg-white/[0.02] rounded-sm">
-                    <div class="system-dot"></div>
-                    <span id="node-status" class="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-500">Monitoring Workflow Cycles...</span>
-                </div>
-                <a href="mailto:infinitypixelhub@proton.me" class="text-[11px] font-bold uppercase tracking-widest text-gray-400 hover:text-white transition-colors">
-                    Contact
-                </a>
+    <div class="background-glow"></div>
+
+    <!-- Minimal Header -->
+    <header class="p-8 md:p-12 flex justify-between items-center w-full fixed top-0 z-50">
+        <div class="flex items-center gap-6 group">
+            <div class="prism-wrapper">
+                <div class="spectrum-beam beam-1"></div>
+                <div class="spectrum-beam beam-2"></div>
+                <div class="spectrum-beam beam-3"></div>
+                <div class="spectrum-beam beam-4"></div>
+                <div class="spectrum-beam beam-5"></div>
+                <div class="prism-core"></div>
             </div>
+            <span class="font-bold text-sm tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 transition-opacity">
+                Infinity Pixel
+            </span>
         </div>
-    </nav>
+    </header>
 
-    <!-- Hero Section -->
-    <section class="relative min-h-screen flex flex-col items-center justify-center pt-24 px-6">
-        <div class="max-w-5xl mx-auto text-center z-10">
-            <div class="reveal mb-12">
-                <span class="text-[10px] font-bold uppercase tracking-[0.6em] text-purple-500/80">Custom Enterprise Automation</span>
-            </div>
-            
-            <h1 class="reveal text-4xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.95] mb-12 text-gradient-white uppercase">
-                We Don't engineer <br>
-                Code. We Reclaim <br>
-                <span class="text-purple-600">Time.</span>
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col justify-center items-center px-6 pt-32 pb-20 text-center">
+        
+        <!-- Hero Section -->
+        <div class="reveal" style="animation-delay: 0.1s">
+            <h1 class="hero-title text-6xl md:text-9xl font-bold mb-10">
+                Infinite Vision.<br>
+                <span class="opacity-20">Digital Reality.</span>
             </h1>
-            
-            <p class="reveal text-gray-500 text-lg md:text-xl max-w-3xl mx-auto mb-16 leading-relaxed font-medium tracking-tight">
-                Infinity Pixel delivers autonomous software ecosystems for <span id="user-region" class="text-white">regional industry leaders</span>. We eliminate manual friction, liberating thousands of operational hours per month.
-            </p>
+        </div>
 
-            <div class="reveal flex flex-col sm:flex-row items-center justify-center gap-8">
-                <a href="mailto:infinitypixelhub@proton.me" class="shimmer-btn px-14 py-6 text-xs font-bold uppercase tracking-[0.3em] w-full sm:w-auto">
-                    Reclaim Your Hours
-                </a>
-                <div class="text-[10px] text-gray-600 uppercase tracking-widest font-bold">
-                    // Operational Efficiency Delta: +92%
-                </div>
+        <p class="reveal max-w-xl text-gray-400 text-lg md:text-xl font-light mb-16 leading-relaxed" style="animation-delay: 0.2s">
+            A specialized software collective engineering high-performance solutions through the lens of precision and spectral innovation.
+        </p>
+
+        <!-- Interactive Spectrum Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mb-20 reveal" style="animation-delay: 0.3s">
+            <div class="spectrum-card p-8 rounded-lg text-left group">
+                <div class="card-glow"></div>
+                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 01</div>
+                <h3 class="text-xl font-bold mb-2">Mobile</h3>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">Fluid native experiences that live in the pocket of the future.</p>
+                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            </div>
+
+            <div class="spectrum-card p-8 rounded-lg text-left group">
+                <div class="card-glow"></div>
+                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 02</div>
+                <h3 class="text-xl font-bold mb-2">Web</h3>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">Architecting the decentralized and performant open web.</p>
+                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            </div>
+
+            <div class="spectrum-card p-8 rounded-lg text-left group">
+                <div class="card-glow"></div>
+                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 03</div>
+                <h3 class="text-xl font-bold mb-2">Analytics</h3>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">Transforming raw noise into spectral clarity through data.</p>
+                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
+            </div>
+
+            <div class="spectrum-card p-8 rounded-lg text-left group">
+                <div class="card-glow"></div>
+                <div class="text-[10px] tracking-widest text-gray-500 uppercase mb-4">Pillar 04</div>
+                <h3 class="text-xl font-bold mb-2">Games</h3>
+                <p class="text-sm text-gray-500 font-light leading-relaxed">Interactive worlds built on the edge of technical limits.</p>
+                <div class="h-[1px] w-0 group-hover:w-full bg-white/20 mt-6 transition-all duration-700"></div>
             </div>
         </div>
 
-        <div class="absolute bottom-12 left-1/2 -translate-x-1/2 reveal opacity-30">
-            <div class="w-px h-12 bg-gradient-to-b from-purple-500 to-transparent"></div>
+        <div class="reveal" style="animation-delay: 0.5s">
+            <a href="mailto:infinitypixelhub@proton.me" class="cta-button inline-block bg-white text-black px-12 py-5 rounded-sm font-bold tracking-widest uppercase text-sm hover:scale-105 active:scale-95 border border-white">
+                Start a Conversation
+            </a>
         </div>
-    </section>
 
-    <!-- The Narrative -->
-    <section class="py-40 border-t border-white/[0.03]">
-        <div class="max-w-7xl mx-auto px-8">
-            <div class="grid lg:grid-cols-2 gap-24 items-center">
-                <div class="reveal space-y-8">
-                    <span class="text-purple-500 font-bold text-[10px] tracking-[0.4em] uppercase">The Directive</span>
-                    <h2 class="text-4xl md:text-5xl font-bold uppercase tracking-tighter leading-tight">Humanity is the <br><span class="text-gray-500">Bottleneck.</span></h2>
-                    <div class="space-y-6 text-gray-400 text-lg leading-relaxed font-medium">
-                        <p>Most organizations are leaking time through a thousand tiny cuts. Data entry, platform syncing, manual reporting, and cross-departmental handoffs are the invisible tax on your growth. </p>
-                        <p>At Infinity Pixel, we view these as <span class="text-white italic">system failures.</span> We don't just "digitize" your business; we automate the logic of your operations. Our custom-built software agents operate at the speed of the API, removing the human lag from your most critical workflows.</p>
-                        <p>By automating your core processes, we transform your workforce from "operators" into <span class="text-purple-500 underline decoration-purple-500/30 underline-offset-8">strategists</span>. You aren't just acquiring software; you are acquiring the freedom to focus on what creates actual value.</p>
-                    </div>
-                </div>
-                <div class="reveal terminal-block scanner overflow-hidden">
-                    <div class="flex gap-2 mb-6">
-                        <div class="w-2 h-2 rounded-full bg-red-500/40"></div>
-                        <div class="w-2 h-2 rounded-full bg-yellow-500/40"></div>
-                        <div class="w-2 h-2 rounded-full bg-green-500/40"></div>
-                    </div>
-                    <div class="space-y-3 font-mono text-[11px] leading-relaxed">
-                        <p class="text-purple-400">root@ip-sys:~# deploy --engine="time_recovery"</p>
-                        <p class="text-gray-500">>> Analyzing workflow: [Finance_Consolidation]</p>
-                        <p class="text-gray-500">>> Human manual input detected: 140 hrs/mo</p>
-                        <p class="text-green-400">>> Initializing Python logic nodes... Complete.</p>
-                        <p class="text-gray-500">>> Syncing CRM (API) <-> ERP (SQL) <-> Cloud Storage</p>
-                        <p class="text-white">>> REDUCTION: Workflow time reduced to 4.2 seconds.</p>
-                        <div class="pt-4 border-t border-white/5 mt-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-[9px] uppercase tracking-widest text-gray-500">System Efficiency</span>
-                                <span class="text-green-400">99.8%</span>
-                            </div>
-                            <div class="h-1 w-full bg-white/5 overflow-hidden">
-                                <div class="h-full bg-purple-600 w-[99%] animate-pulse"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    </main>
 
-    <!-- Advanced Analytics: Visualizing Reclaimed Value -->
-    <section class="py-40 bg-white/[0.01] border-y border-white/[0.03]">
-        <div class="max-w-7xl mx-auto px-8">
-            <div class="mb-20">
-                <span class="text-purple-500 font-bold text-[10px] tracking-[0.4em] uppercase mb-4 block">Operational Telemetry</span>
-                <h2 class="reveal text-4xl font-bold uppercase tracking-tighter text-gradient-white">Time Salvage Metrics</h2>
-            </div>
-
-            <div class="grid lg:grid-cols-2 gap-20">
-                <!-- Time-Based Area Chart -->
-                <div id="time-chart" class="reveal chart-container p-10 rounded-sm overflow-hidden">
-                    <div class="flex justify-between items-start mb-12">
-                        <div>
-                            <h4 class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Time-Domain Recovery</h4>
-                            <p class="text-xl font-bold uppercase tracking-tight">Cumulative Hours Salvaged</p>
-                        </div>
-                        <div class="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-500 text-[10px] font-bold uppercase tracking-widest">
-                            Time Saved
-                        </div>
-                    </div>
-                    
-                    <div class="relative h-64 w-full">
-                        <!-- Chart Grid Lines -->
-                        <div class="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
-                            <div class="border-t border-white w-full"></div>
-                            <div class="border-t border-white w-full"></div>
-                            <div class="border-t border-white w-full"></div>
-                            <div class="border-t border-white w-full"></div>
-                        </div>
-
-                        <!-- Area Chart SVG -->
-                        <svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none">
-                            <defs>
-                                <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.3" />
-                                    <stop offset="100%" stop-color="#a855f7" stop-opacity="0" />
-                                </linearGradient>
-                            </defs>
-                            <!-- Background Fill Area -->
-                            <path id="time-area-fill" class="area-fill" d="M0,400 L0,380 C150,370 250,320 400,280 C600,220 750,150 1000,20 L1000,400 Z" fill="url(#areaGradient)" />
-                            <!-- Main Trend Line -->
-                            <path id="time-trend-line" class="area-path" d="M0,380 C150,370 250,320 400,280 C600,220 750,150 1000,20" fill="none" stroke="#a855f7" stroke-width="4" stroke-linecap="round" />
-                        </svg>
-
-                        <!-- X-Axis Labels -->
-                        <div class="absolute bottom-[-30px] left-0 right-0 flex justify-between text-[9px] font-bold text-gray-600 uppercase tracking-widest">
-                            <span>Month 01</span>
-                            <span>Month 03</span>
-                            <span>Month 06</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Circular Precision Index -->
-                <div id="precision-chart" class="reveal chart-container p-10 rounded-sm flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2">
-                        <h4 class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500 mb-2">Precision Index</h4>
-                        <p class="text-xl font-bold uppercase tracking-tight mb-6">Error Rate Elimination</p>
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-2 h-2 rounded-full bg-purple-500"></div>
-                                <span class="text-[10px] font-bold uppercase text-gray-400">Autonomous Checksum</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                                <span class="text-[10px] font-bold uppercase text-gray-400">Logic Validation</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-1/2 relative flex items-center justify-center">
-                        <svg class="w-48 h-48" viewBox="0 0 100 100">
-                            <!-- Background Circle -->
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8"/>
-                            <!-- Progress Circle -->
-                            <circle id="radial-gauge" cx="50" cy="50" r="45" fill="none" stroke="#a855f7" stroke-width="8" 
-                                    class="radial-progress" stroke-linecap="round"/>
-                            <!-- Inner Glow -->
-                            <circle cx="50" cy="50" r="35" fill="rgba(168, 85, 247, 0.05)"/>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="accuracy-value" class="text-3xl font-bold tracking-tighter">0.0%</span>
-                            <span class="text-[8px] font-bold uppercase text-gray-600 tracking-widest">Accuracy</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Strategic Briefing -->
-    <section class="py-40 bg-white/[0.01]">
-        <div class="max-w-7xl mx-auto px-8">
-            <div class="mb-24 text-center">
-                <h2 class="reveal text-4xl font-bold uppercase tracking-widest mb-4">The Logic of Time</h2>
-                <p class="reveal text-gray-500 font-bold text-[10px] tracking-[0.5em] uppercase">Technological Superiority vs Manual Labor</p>
-            </div>
-
-            <div class="grid md:grid-cols-2 gap-px bg-white/[0.05] border border-white/[0.05]">
-                <div class="reveal p-12 bg-slate-950/40 space-y-12">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 border border-purple-500/20 bg-purple-500/5 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                        </div>
-                        <h3 class="text-xl font-bold uppercase tracking-widest">Architectural Speed</h3>
-                    </div>
-                    
-                    <ul class="space-y-8">
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">01</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">Instant Data Orchestration</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">Remove the latency of multi-platform ecosystems. We unify your stack into a single, high-velocity data pipeline that requires zero oversight.</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">02</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">24/7/365 Autonomous Execution</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">Your processes don't sleep. Our software agents handle lead scoring, client onboarding, and billing cycles while your team is offline.</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">03</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">Error-Proof Validation</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">Humans make mistakes under volume. Code doesn't. We implement rigorous logic-checks that ensure 100% data integrity at any scale.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="reveal p-12 bg-slate-950/40 space-y-12">
-                    <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 border border-blue-500/20 bg-blue-500/5 flex items-center justify-center">
-                            <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M12 2l4 4M12 2l-4 4M12 22l4-4M12 22l-4-4"/></svg>
-                        </div>
-                        <h3 class="text-xl font-bold uppercase tracking-widest">Strategic Scaling</h3>
-                    </div>
-                    
-                    <ul class="space-y-8">
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">04</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">Zero Marginal Cost Scaling</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">Doubling your volume shouldn't require doubling your headcount. Automated systems scale infinitely without adding to your payroll liability.</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">05</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">Custom API Bridges</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">We build custom connectors where "out-of-the-box" software fails, ensuring your proprietary systems communicate without friction.</p>
-                            </div>
-                        </li>
-                        <li class="flex gap-6">
-                            <span class="pro-label font-bold text-xs uppercase pt-1">06</span>
-                            <div>
-                                <h4 class="text-white font-bold text-sm uppercase mb-1">Predictive Resource Planning</h4>
-                                <p class="text-gray-500 text-sm leading-relaxed font-medium">Automated analytics identify operational bottlenecks before they happen, giving you a 30-day headstart on market shifts.</p>
-                            </div>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Lead Capture CTA -->
-    <section class="py-60 relative overflow-hidden">
-        <div class="max-w-4xl mx-auto px-8 text-center relative z-10">
-            <div class="reveal inline-block px-4 py-1 border border-purple-500/20 bg-purple-500/5 rounded-full mb-10">
-                <span class="text-[9px] font-bold uppercase tracking-[0.4em] text-purple-400">Limited Capacity Partnerships</span>
-            </div>
-            <h2 class="reveal text-4xl md:text-7xl font-bold mb-12 tracking-tighter text-gradient-white uppercase">Reclaim Your <br>Freedom.</h2>
-            <p class="reveal text-gray-500 text-lg mb-16 max-w-xl mx-auto font-medium">
-                Our engineers are currently auditing <span class="location-name">Global</span> infrastructures. Submit your workflow brief for a complementary time-leak analysis.
-            </p>
-            
-            <div class="reveal">
-                <a href="mailto:infinitypixelhub@proton.me" class="shimmer-btn px-20 py-8 text-sm font-bold uppercase tracking-[0.4em] shadow-3xl shadow-purple-500/10 mb-12">
-                    Initialize System Audit
-                </a>
-                
-                <div class="flex items-center justify-center gap-4 text-gray-600 font-bold text-[10px] uppercase tracking-widest mt-12 opacity-50 hover:opacity-100 transition-opacity">
-                    <span class="location-name">Global Uplink</span>
-                    <div class="w-1 h-1 bg-gray-700 rounded-full"></div>
-                    <span>infinitypixelhub@proton.me</span>
-                </div>
-            </div>
+    <!-- Footer Area -->
+    <footer class="p-8 md:p-12 flex flex-col md:flex-row justify-between items-end gap-8 reveal" style="animation-delay: 0.6s">
+        <div class="text-left">
+            <div class="text-[10px] text-gray-600 uppercase tracking-[0.2em] mb-2">Primary Contact</div>
+            <a href="mailto:infinitypixelhub@proton.me" class="text-gray-400 hover:text-white transition-colors">
+                infinitypixelhub@proton.me
+            </a>
         </div>
         
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-purple-600/[0.02] blur-[150px] pointer-events-none"></div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-20 border-t border-white/[0.03]">
-        <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-10">
-            <div class="flex items-center gap-4 grayscale opacity-40">
-                <div class="w-6 h-6 bg-white rounded-sm flex items-center justify-center">
-                    <svg class="w-4 h-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                    </svg>
-                </div>
-                <span class="text-[10px] font-bold tracking-[0.5em] uppercase">Infinity Pixel</span>
-            </div>
-            
-            <div class="text-[9px] text-gray-700 font-bold uppercase tracking-[0.4em]">
-                &copy; 2024 IP.SYS // AUTOMATION_ENGINEERING_VER_4.0
-            </div>
-
-            <div class="flex gap-10 text-[9px] font-bold text-gray-600 uppercase tracking-widest">
-                <a href="#" class="hover:text-white transition-colors">Privacy</a>
-                <a href="#" class="hover:text-white transition-colors">Github</a>
-            </div>
+        <div class="text-right">
+            <div class="text-[10px] text-gray-600 uppercase tracking-[0.2em] mb-2">Global Operations</div>
+            <p class="text-gray-400">Distributed Collective</p>
         </div>
     </footer>
 
     <script>
-        // Spotlight interaction
-        const spotlight = document.getElementById('spotlight');
-        document.addEventListener('mousemove', e => {
-            window.requestAnimationFrame(() => {
-                spotlight.style.setProperty('--x', `${e.clientX}px`);
-                spotlight.style.setProperty('--y', `${e.clientY}px`);
+        // Subtle mouse tracking for the background glow
+        document.addEventListener('mousemove', (e) => {
+            const glow = document.querySelector('.background-glow');
+            const x = e.clientX;
+            const y = e.clientY;
+            glow.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(255,255,255,0.04) 0%, transparent 70%)`;
+
+            // Interaction for cards
+            document.querySelectorAll('.spectrum-card').forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const cardGlow = card.querySelector('.card-glow');
+                const localX = x - rect.left;
+                const localY = y - rect.top;
+                
+                cardGlow.style.left = `${localX - 50}px`;
+                cardGlow.style.top = `${localY - 50}px`;
             });
         });
-
-        // Chart Interaction & Observers
-        const chartObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    if (entry.target.id === 'time-chart') {
-                        const line = document.getElementById('time-trend-line');
-                        const fill = document.getElementById('time-area-fill');
-                        
-                        line.style.strokeDashoffset = "0";
-                        fill.style.opacity = "1";
-                        fill.style.transform = "translateY(0)";
-                    }
-                    if (entry.target.id === 'precision-chart') {
-                        const gauge = document.getElementById('radial-gauge');
-                        const valueLabel = document.getElementById('accuracy-value');
-                        
-                        gauge.style.strokeDashoffset = "0.2";
-                        
-                        let start = 0;
-                        const target = 99.9;
-                        const duration = 2000;
-                        const startTime = performance.now();
-
-                        function animateText(currentTime) {
-                            const elapsed = currentTime - startTime;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const currentVal = (progress * target).toFixed(1);
-                            valueLabel.textContent = `${currentVal}%`;
-                            if (progress < 1) requestAnimationFrame(animateText);
-                        }
-                        requestAnimationFrame(animateText);
-                    }
-                }
-            });
-        }, { threshold: 0.3 });
-
-        document.querySelectorAll('.chart-container').forEach(chart => chartObserver.observe(chart));
-
-        // General Reveal Observer
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('active');
-                }
-            });
-        }, { threshold: 0.15 });
-
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-        // Location Detection
-        async function detectLocation() {
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-                
-                if (data.city) {
-                    const regionElements = document.querySelectorAll('#user-region');
-                    const locationNames = document.querySelectorAll('.location-name');
-                    const nodeStatus = document.getElementById('node-status');
-
-                    regionElements.forEach(el => el.textContent = `${data.city} Market Context`);
-                    locationNames.forEach(el => el.textContent = data.city);
-                    nodeStatus.textContent = `Uplink: ${data.city}_Node_Active`;
-                }
-            } catch (error) {
-                document.getElementById('node-status').textContent = 'Uplink: Global_Node_Active';
-            }
-        }
-
-        window.onload = detectLocation;
     </script>
 </body>
 </html>
