@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Infinity Pixel</title>
+    <title>Infinity Pixel - IT Solutions</title>
     <!-- Favicon using the Prism Logo concept -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='25' y='25' width='50' height='50' fill='white' rx='5'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,46 +19,88 @@
             cursor: auto;
         }
 
-        /* Inline Dino Bar */
-        .dino-inline-container {
-            display: inline-flex;
-            align-items: center;
+        /* Walking Track Above Grid */
+        .pixel-track {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.1) 80%, transparent);
             position: relative;
-            width: 60px; /* Discrete small width */
-            height: 14px;
-            margin-left: 12px; /* Space after the text */
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 56px;
+            overflow: visible;
         }
 
-        .dino-walker {
+        .walking-pixel-container {
             position: absolute;
-            bottom: 1px;
-            left: -15px;
-            width: 12px;
-            height: 12px;
-            animation: walk-across 8s linear infinite;
+            bottom: -10px;
+            left: -30px;
+            width: 20px;
+            height: 20px;
+            animation: walk-across-grid 40s linear infinite;
+            z-index: 10;
         }
 
-        /* Real-ish Pixel Walking Animation */
-        .dino-sprite {
+        /* The Cube: A 3D-ish isometric pixel */
+        .pixel-cube {
             width: 100%;
             height: 100%;
-            fill: #4ade80;
-            animation: dino-step 0.4s steps(2) infinite;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: cube-bounce 0.6s ease-in-out infinite alternate;
         }
 
-        @keyframes walk-across {
-            0% { left: -15px; }
-            100% { left: 100%; }
+        /* Structured 3D Face Design */
+        .pixel-cube::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.3);
         }
 
-        @keyframes dino-step {
-            0% { transform: translateY(0) scaleX(1); }
-            50% { transform: translateY(-1px) scaleX(1.05); }
-            100% { transform: translateY(0) scaleX(1); }
+        /* Structured Beam Emission */
+        .spectrum-array {
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transform: translateY(-50%);
+            padding-left: 10px;
+            pointer-events: none;
+        }
+
+        .structured-beam {
+            height: 2px;
+            width: 0;
+            opacity: 0;
+            border-radius: 2px;
+            transform-origin: left center;
+            animation: structured-shoot 2s infinite;
+        }
+
+        /* Sequential Timing and specific colors */
+        .beam-red    { background: #ff4d4d; animation-delay: 0.0s; box-shadow: 0 0 8px #ff4d4d; }
+        .beam-yellow { background: #ffd11a; animation-delay: 0.2s; box-shadow: 0 0 8px #ffd11a; }
+        .beam-green  { background: #33ff77; animation-delay: 0.4s; box-shadow: 0 0 8px #33ff77; }
+        .beam-blue   { background: #3399ff; animation-delay: 0.6s; box-shadow: 0 0 8px #3399ff; }
+
+        @keyframes walk-across-grid {
+            0% { left: -5%; }
+            100% { left: 105%; }
+        }
+
+        @keyframes cube-bounce {
+            from { transform: translateY(0) scaleY(1); }
+            to { transform: translateY(-6px) scaleY(0.9); }
+        }
+
+        @keyframes structured-shoot {
+            0% { width: 0; opacity: 0; transform: translateX(0); }
+            10% { opacity: 1; }
+            40% { width: 60px; opacity: 1; }
+            100% { width: 120px; opacity: 0; transform: translateX(40px); }
         }
 
         /* Modest Prism Logo */
@@ -92,7 +134,6 @@
 
         .prism-wrapper:hover .prism-core {
             transform: scale(0.85);
-            background: #ffffff;
         }
 
         .prism-wrapper:hover .spectrum-beam {
@@ -127,13 +168,11 @@
             transform: translateY(-1px);
         }
 
-        /* Subtle Hero Typography */
         .hero-text {
             letter-spacing: -0.02em;
             font-weight: 400;
         }
 
-        /* Quiet Interactive Cards */
         .modest-card {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.05);
@@ -196,20 +235,10 @@
                 <div class="prism-core"></div>
             </div>
 
-            <!-- Text First -->
+            <!-- Text -->
             <span class="ml-4 text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
                 Infinity Pixel
             </span>
-
-            <!-- Inline Dino Bar -->
-            <div class="dino-inline-container">
-                <div class="dino-walker">
-                    <svg class="dino-sprite" viewBox="0 0 24 24">
-                        <path d="M12,2H16V4H18V6H20V10H18V12H16V14H14V16H16V18H14V20H12V22H10V20H8V18H6V16H4V12H2V8H4V6H6V4H10V2Z M16,6H14V8H16V6Z M8,6H10V8H8V6Z" />
-                        <rect x="14" y="6" width="2" height="2" fill="#000" fill-opacity="0.3" />
-                    </svg>
-                </div>
-            </div>
         </div>
 
         <!-- Top Right Contact Button -->
@@ -231,42 +260,62 @@
             </p>
         </div>
 
-        <!-- Expanded Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mb-24 reveal" style="animation-delay: 0.4s">
-            <div class="modest-card p-10 rounded-sm">
-                <div class="dot-indicator mb-6"></div>
-                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">
-                    Developing stable, high-performance mobile applications for iOS and Android. We focus on seamless interactions and native-first architectures that ensure your product feels right at home on any device.
-                </p>
+        <!-- Grid Container with Cube Walking Above -->
+        <div class="w-full max-w-6xl reveal" style="animation-delay: 0.4s">
+            
+            <!-- Walking Track -->
+            <div class="pixel-track">
+                <div class="walking-pixel-container">
+                    <!-- The Cube Character -->
+                    <div class="pixel-cube"></div>
+                    
+                    <!-- Structured Array of Beams -->
+                    <div class="spectrum-array">
+                        <div class="structured-beam beam-red"></div>
+                        <div class="structured-beam beam-yellow"></div>
+                        <div class="structured-beam beam-green"></div>
+                        <div class="structured-beam beam-blue"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="modest-card p-10 rounded-sm">
-                <div class="dot-indicator mb-6"></div>
-                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">
-                    Crafting clean, responsive web platforms built for longevity and speed. From modern headless CMS integrations to lightweight static sites, we prioritize accessibility and minimal load times.
-                </p>
-            </div>
+            <!-- Expanded Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="modest-card p-10 rounded-sm">
+                    <div class="dot-indicator mb-6"></div>
+                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
+                    <p class="text-xs text-gray-500 font-light leading-relaxed">
+                        Developing stable, high-performance mobile applications for iOS and Android. We focus on seamless interactions and native-first architectures that ensure your product feels right at home on any device.
+                    </p>
+                </div>
 
-            <div class="modest-card p-10 rounded-sm">
-                <div class="dot-indicator mb-6"></div>
-                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">
-                    Providing clear visualizations and deep-dive reporting to help you understand your data. We transform complex metrics into actionable insights through custom dashboards and privacy-first tracking solutions.
-                </p>
-            </div>
+                <div class="modest-card p-10 rounded-sm">
+                    <div class="dot-indicator mb-6"></div>
+                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
+                    <p class="text-xs text-gray-500 font-light leading-relaxed">
+                        Crafting clean, responsive web platforms built for longevity and speed. From modern headless CMS integrations to lightweight static sites, we prioritize accessibility and minimal load times.
+                    </p>
+                </div>
 
-            <div class="modest-card p-10 rounded-sm">
-                <div class="dot-indicator mb-6"></div>
-                <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">
-                    Creating fun and innovative games with engaging mechanics. We specialize in polished 2D experiences and browser-based entertainment that pushes the boundaries of small-scale interactive storytelling.
-                </p>
+                <div class="modest-card p-10 rounded-sm">
+                    <div class="dot-indicator mb-6"></div>
+                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
+                    <p class="text-xs text-gray-500 font-light leading-relaxed">
+                        Providing clear visualizations and deep-dive reporting to help you understand your data. We transform complex metrics into actionable insights through custom dashboards and privacy-first tracking solutions.
+                    </p>
+                </div>
+
+                <div class="modest-card p-10 rounded-sm">
+                    <div class="dot-indicator mb-6"></div>
+                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
+                    <p class="text-xs text-gray-500 font-light relaxed">
+                        Creating fun and innovative games with engaging mechanics. We specialize in polished 2D experiences and browser-based entertainment that pushes the boundaries of small-scale interactive storytelling.
+                    </p>
+                </div>
             </div>
         </div>
 
-        <div class="reveal" style="animation-delay: 0.6s">
+        <div class="reveal mt-24" style="animation-delay: 0.6s">
             <a href="https://infinityxpixel.github.io/blankedgame/" target="_blank" rel="noopener noreferrer" class="btn-green-discrete py-3 px-8">
                 upcoming game: Blanked
             </a>
