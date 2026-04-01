@@ -16,6 +16,49 @@
             color: #ececec;
             margin: 0;
             overflow-x: hidden;
+            cursor: auto;
+        }
+
+        /* Inline Dino Bar */
+        .dino-inline-container {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            width: 60px; /* Discrete small width */
+            height: 14px;
+            margin-left: 12px; /* Space after the text */
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dino-walker {
+            position: absolute;
+            bottom: 1px;
+            left: -15px;
+            width: 12px;
+            height: 12px;
+            animation: walk-across 8s linear infinite;
+        }
+
+        /* Real-ish Pixel Walking Animation */
+        .dino-sprite {
+            width: 100%;
+            height: 100%;
+            fill: #4ade80;
+            animation: dino-step 0.4s steps(2) infinite;
+        }
+
+        @keyframes walk-across {
+            0% { left: -15px; }
+            100% { left: 100%; }
+        }
+
+        @keyframes dino-step {
+            0% { transform: translateY(0) scaleX(1); }
+            50% { transform: translateY(-1px) scaleX(1.05); }
+            100% { transform: translateY(0) scaleX(1); }
         }
 
         /* Modest Prism Logo */
@@ -61,6 +104,28 @@
         .beam-2 { transform: rotate(-10deg); background: #ffd11a; }
         .beam-3 { transform: rotate(10deg);  background: #33ff77; }
         .beam-4 { transform: rotate(30deg);  background: #3399ff; }
+
+        /* Contact & CTA Button Styles */
+        .btn-green-discrete {
+            background: rgba(74, 222, 128, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            display: inline-block;
+        }
+
+        .btn-green-discrete:hover {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: rgba(74, 222, 128, 0.6);
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
+            transform: translateY(-1px);
+        }
 
         /* Subtle Hero Typography */
         .hero-text {
@@ -113,33 +178,16 @@
             opacity: 0;
             animation: simpleFade 1.5s ease forwards;
         }
-
-        .cta-link {
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            transition: border-color 0.3s ease;
-        }
-
-        .cta-link:hover {
-            border-color: rgba(255,255,255,1);
-        }
     </style>
 </head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JEQV4G13R8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-JEQV4G13R8');
-</script>
 <body class="flex flex-col min-h-screen">
 
     <div class="background-glow" id="glow"></div>
 
     <!-- Modest Header -->
     <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50">
-        <div class="flex items-center gap-4 group">
+        <div class="flex items-center group">
+            <!-- Prism Logo -->
             <div class="prism-wrapper">
                 <div class="spectrum-beam beam-1"></div>
                 <div class="spectrum-beam beam-2"></div>
@@ -147,10 +195,27 @@
                 <div class="spectrum-beam beam-4"></div>
                 <div class="prism-core"></div>
             </div>
-            <span class="text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
+
+            <!-- Text First -->
+            <span class="ml-4 text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
                 Infinity Pixel
             </span>
+
+            <!-- Inline Dino Bar -->
+            <div class="dino-inline-container">
+                <div class="dino-walker">
+                    <svg class="dino-sprite" viewBox="0 0 24 24">
+                        <path d="M12,2H16V4H18V6H20V10H18V12H16V14H14V16H16V18H14V20H12V22H10V20H8V18H6V16H4V12H2V8H4V6H6V4H10V2Z M16,6H14V8H16V6Z M8,6H10V8H8V6Z" />
+                        <rect x="14" y="6" width="2" height="2" fill="#000" fill-opacity="0.3" />
+                    </svg>
+                </div>
+            </div>
         </div>
+
+        <!-- Top Right Contact Button -->
+        <a href="mailto:infinitypixelhub@proton.me" class="btn-green-discrete reveal" style="animation-delay: 0.4s">
+            Contact
+        </a>
     </header>
 
     <!-- Content -->
@@ -166,36 +231,44 @@
             </p>
         </div>
 
-        <!-- Grid -->
+        <!-- Expanded Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mb-24 reveal" style="animation-delay: 0.4s">
             <div class="modest-card p-10 rounded-sm">
                 <div class="dot-indicator mb-6"></div>
                 <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">Stable and intuitive mobile applications for iOS and Android.</p>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">
+                    Developing stable, high-performance mobile applications for iOS and Android. We focus on seamless interactions and native-first architectures that ensure your product feels right at home on any device.
+                </p>
             </div>
 
             <div class="modest-card p-10 rounded-sm">
                 <div class="dot-indicator mb-6"></div>
                 <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">Clean, responsive web platforms built for longevity and speed.</p>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">
+                    Crafting clean, responsive web platforms built for longevity and speed. From modern headless CMS integrations to lightweight static sites, we prioritize accessibility and minimal load times.
+                </p>
             </div>
 
             <div class="modest-card p-10 rounded-sm">
                 <div class="dot-indicator mb-6"></div>
                 <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">Clear visualizations and reporting to help understand your data.</p>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">
+                    Providing clear visualizations and deep-dive reporting to help you understand your data. We transform complex metrics into actionable insights through custom dashboards and privacy-first tracking solutions.
+                </p>
             </div>
 
             <div class="modest-card p-10 rounded-sm">
                 <div class="dot-indicator mb-6"></div>
                 <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
-                <p class="text-xs text-gray-500 font-light leading-relaxed">Creating fun and innovative games with engaging mechanics.</p>
+                <p class="text-xs text-gray-500 font-light leading-relaxed">
+                    Creating fun and innovative games with engaging mechanics. We specialize in polished 2D experiences and browser-based entertainment that pushes the boundaries of small-scale interactive storytelling.
+                </p>
             </div>
         </div>
 
         <div class="reveal" style="animation-delay: 0.6s">
-            <a href="mailto:infinitypixelhub@proton.me" class="cta-link pb-1 text-sm tracking-widest uppercase opacity-80 hover:opacity-100">
-                Contact the studio
+            <a href="https://infinityxpixel.github.io/blankedgame/" target="_blank" rel="noopener noreferrer" class="btn-green-discrete py-3 px-8">
+                upcoming game: Blanked
             </a>
         </div>
 
@@ -211,8 +284,8 @@
     </footer>
 
     <script>
-        // Subtle mouse tracking for the background
         const glow = document.getElementById('glow');
+        
         document.addEventListener('mousemove', (e) => {
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
