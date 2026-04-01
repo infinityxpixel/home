@@ -72,6 +72,12 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        /* Animated Title Colors */
+        .scanned-text {
+            display: inline-block;
+            transition: color 0.4s ease, text-shadow 0.4s ease;
+        }
+
         .walking-pixel-container:hover .pixel-cube {
             background: #fbbf24;
             box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
@@ -276,8 +282,8 @@
     <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20 relative z-10">
         
         <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
-            <h1 class="text-4xl md:text-5xl font-normal tracking-tight mb-8">
-                Thoughtful software, <br>
+            <h1 class="text-4xl md:text-5xl font-normal tracking-tight mb-8" id="hero-title">
+                <span class="scanned-text">Thoughtful</span> <span class="scanned-text">software,</span> <br>
                 <span class="opacity-40">carefully crafted.</span>
             </h1>
             <p class="text-gray-500 font-light leading-relaxed md:px-20 text-base">
@@ -357,12 +363,13 @@
         const ctx = canvas.getContext('2d');
         const cubeContainer = document.getElementById('cube-container');
         const cards = document.querySelectorAll('.modest-card');
+        const heroSpans = document.querySelectorAll('.scanned-text');
         
         let particles = [];
+        let globalRays = [];
         let mouse = { x: undefined, y: undefined };
         let hoverTimer;
         
-        // Prism ray colors
         const PRISM_COLORS = ['#ff4d4d', '#ffd11a', '#33ff77', '#3399ff'];
         let colorIndex = 0;
 
@@ -372,6 +379,28 @@
         }
         window.addEventListener('resize', resize);
         resize();
+
+        class GlobalRay {
+            constructor(x, color) {
+                this.x = x;
+                this.color = color;
+                this.life = 1.0;
+                this.decay = 0.02;
+                this.width = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.life -= this.decay;
+            }
+            draw() {
+                ctx.strokeStyle = this.color;
+                ctx.globalAlpha = this.life * 0.3;
+                ctx.lineWidth = this.width;
+                ctx.beginPath();
+                ctx.moveTo(this.x, 0);
+                ctx.lineTo(this.x, canvas.height);
+                ctx.stroke();
+            }
+        }
 
         class Particle {
             constructor(x, y, color) {
@@ -395,13 +424,22 @@
             draw() {
                 ctx.fillStyle = this.color;
                 ctx.globalAlpha = this.life * 0.6;
-                // Square data-pixel look
                 ctx.fillRect(this.x, this.y, this.size, this.size);
             }
         }
 
-        function handleParticles() {
-            ctx.globalAlpha = 1;
+        function handleElements() {
+            // Global Rays
+            for (let i = 0; i < globalRays.length; i++) {
+                globalRays[i].update();
+                globalRays[i].draw();
+                if (globalRays[i].life <= 0) {
+                    globalRays.splice(i, 1);
+                    i--;
+                }
+            }
+
+            // Particles
             for (let i = 0; i < particles.length; i++) {
                 particles[i].update();
                 particles[i].draw();
@@ -414,53 +452,57 @@
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            handleParticles();
+            handleElements();
             requestAnimationFrame(animate);
         }
         animate();
 
-        // Mouse Trail with cycling prism colors
+        // Mouse Trail
         document.addEventListener('mousemove', (e) => {
             mouse.x = e.clientX;
             mouse.y = e.clientY;
             
             for(let i = 0; i < 3; i++) {
-                // Cycle colors based on mouse movement frequency
                 const color = PRISM_COLORS[Math.floor(colorIndex) % PRISM_COLORS.length];
                 particles.push(new Particle(mouse.x, mouse.y, color));
                 colorIndex += 0.1;
             }
         });
 
-        // Pause on Hover Logic
-        cubeContainer.addEventListener('mouseenter', () => {
-            cubeContainer.classList.add('paused');
-            clearTimeout(hoverTimer);
-        });
-
-        cubeContainer.addEventListener('mouseleave', () => {
-            hoverTimer = setTimeout(() => {
-                cubeContainer.classList.remove('paused');
-            }, 500);
-        });
-
-        // Intersection Logic to highlight cards with prism colors
+        // Loop to check Pixel position and update world
         setInterval(() => {
             const rect = cubeContainer.getBoundingClientRect();
             const cubeX = rect.left + rect.width / 2;
-            
-            // Derive a color from the cube's position for the "active" card
             const activeColor = PRISM_COLORS[Math.floor(Date.now() / 800) % PRISM_COLORS.length];
 
+            // 1. Generate shooting rays
+            if (!cubeContainer.classList.contains('paused')) {
+                globalRays.push(new GlobalRay(cubeX, activeColor));
+            }
+
+            // 2. Animate Hero Text as pixel passes
+            heroSpans.forEach((span, idx) => {
+                const spanRect = span.getBoundingClientRect();
+                const distance = Math.abs(cubeX - (spanRect.left + spanRect.width/2));
+                
+                if (distance < 150) {
+                    const intensity = 1 - (distance / 150);
+                    const color = PRISM_COLORS[idx % PRISM_COLORS.length];
+                    span.style.color = color;
+                    span.style.textShadow = `0 0 ${15 * intensity}px ${color}`;
+                } else {
+                    span.style.color = '';
+                    span.style.textShadow = '';
+                }
+            });
+
+            // 3. Highlight cards
             cards.forEach((card, index) => {
                 const cardRect = card.getBoundingClientRect();
                 if (cubeX >= cardRect.left && cubeX <= cardRect.right) {
-                    // Match the card border and indicator to a cycle of prism colors
                     const cycleColor = PRISM_COLORS[index % PRISM_COLORS.length];
-                    card.style.borderColor = cycleColor.replace(')', ', 0.4)').replace('#', 'rgba('); 
-                    // Simpler hex to rgba logic for the border:
                     card.style.borderColor = cycleColor;
-                    card.style.boxShadow = `0 0 20px ${cycleColor}22`; // Adding low opacity hex
+                    card.style.boxShadow = `0 0 20px ${cycleColor}22`;
                     
                     const dot = card.querySelector('.dot-indicator');
                     dot.style.background = cycleColor;
@@ -473,7 +515,18 @@
                     dot.style.boxShadow = '';
                 }
             });
-        }, 100);
+        }, 30);
+
+        cubeContainer.addEventListener('mouseenter', () => {
+            cubeContainer.classList.add('paused');
+            clearTimeout(hoverTimer);
+        });
+
+        cubeContainer.addEventListener('mouseleave', () => {
+            hoverTimer = setTimeout(() => {
+                cubeContainer.classList.remove('paused');
+            }, 500);
+        });
     </script>
 </body>
 </html>
