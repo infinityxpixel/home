@@ -34,12 +34,13 @@
             max-width: 1152px;
             position: relative;
             z-index: 10;
+            transition: transform 3s cubic-bezier(0.7, 0, 0.3, 1), opacity 2s ease;
         }
 
         .pixel-track {
             width: 100%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 10%, rgba(255, 255, 255, 0.1) 90%, transparent);
             position: relative;
             margin-bottom: 56px;
             overflow: visible;
@@ -52,14 +53,12 @@
             width: 24px;
             height: 24px;
             animation: walk-grid-bounds 65s linear infinite;
-            z-index: 50;
+            z-index: 100;
             pointer-events: auto;
-            cursor: crosshair;
+            cursor: pointer;
         }
 
-        .paused {
-            animation-play-state: paused !important;
-        }
+        .paused { animation-play-state: paused !important; }
 
         .pixel-cube {
             width: 100%;
@@ -69,20 +68,37 @@
             background: #ffffff;
             box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.4);
             animation: cube-bounce 0.8s ease-in-out infinite alternate;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
-        /* Animated Title Colors */
-        .scanned-text {
+        /* Destruction State Styles */
+        .destroy-mode .pixel-cube {
+            background: #ff0000 !important;
+            box-shadow: 0 0 30px #ff0000, 0 0 60px #ff0000 !important;
+            animation: cube-shake 0.1s infinite !important;
+        }
+
+        @keyframes cube-shake {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            100% { transform: translate(1px, 1px); }
+        }
+
+        .scanned-text, .hero-subline, .hero-description, .modest-card, .upcoming-btn-container {
             display: inline-block;
-            transition: color 0.4s ease, text-shadow 0.4s ease;
+            transition: color 0.3s ease, text-shadow 0.3s ease, opacity 0.5s ease, transform 3s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        .walking-pixel-container:hover .pixel-cube {
-            background: #fbbf24;
-            box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
-            transform: scale(1.4) rotate(45deg);
-            animation: cube-vibrate 0.1s linear infinite;
+        .is-disintegrating {
+            animation: text-glitch-destroy 0.2s infinite !important;
+            color: #ff4d4d !important;
+            text-shadow: 0 0 20px #ff0000 !important;
+        }
+
+        @keyframes text-glitch-destroy {
+            0% { transform: translate(0); }
+            50% { transform: translate(-2px, 2px); }
+            100% { transform: translate(0); }
         }
 
         .spectrum-array {
@@ -94,12 +110,7 @@
             gap: 4px;
             transform: translate(10px, -50%);
             pointer-events: none;
-            transition: all 0.4s ease;
-        }
-
-        .walking-pixel-container:hover .spectrum-array {
-            transform: translate(-50%, -50%);
-            left: 50%;
+            transition: opacity 0.3s ease;
         }
 
         .structured-beam {
@@ -116,32 +127,15 @@
         .beam-green  { background: #33ff77; animation-delay: 0.4s; box-shadow: 0 0 8px #33ff77; }
         .beam-blue   { background: #3399ff; animation-delay: 0.6s; box-shadow: 0 0 8px #3399ff; }
 
-        .supernova-only { display: none; }
-        .walking-pixel-container:hover .supernova-only { display: block; }
-        
-        .walking-pixel-container:hover .structured-beam {
-            animation: supernova-shoot 1.5s infinite;
-        }
-
         @keyframes walk-grid-bounds {
             0% { left: 0%; transform: scaleX(1); }
-            48% { transform: scaleX(1); }
             50% { left: calc(100% - 24px); transform: scaleX(-1); }
-            98% { transform: scaleX(-1); }
             100% { left: 0%; transform: scaleX(1); }
         }
 
         @keyframes cube-bounce {
             from { transform: translateY(0) scaleY(1); }
             to { transform: translateY(-10px) scaleY(0.8); }
-        }
-
-        @keyframes cube-vibrate {
-            0% { transform: scale(1.4) rotate(45deg) translate(0); }
-            25% { transform: scale(1.4) rotate(45deg) translate(2px, -2px); }
-            50% { transform: scale(1.4) rotate(45deg) translate(-2px, 2px); }
-            75% { transform: scale(1.4) rotate(45deg) translate(2px, 2px); }
-            100% { transform: scale(1.4) rotate(45deg) translate(0); }
         }
 
         @keyframes structured-shoot {
@@ -151,225 +145,182 @@
             100% { width: 140px; opacity: 0; transform: translateX(60px); }
         }
 
-        @keyframes supernova-shoot {
-            0% { width: 0; opacity: 0; transform: rotate(var(--angle)) translateX(0); }
-            20% { opacity: 1; }
-            100% { width: 220px; opacity: 0; transform: rotate(var(--angle)) translateX(110px); }
-        }
-
-        .prism-wrapper {
-            position: relative;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-        }
-        .prism-core {
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            border-radius: 1px;
-            position: relative;
-            z-index: 2;
-            transition: all 0.5s ease;
-        }
-        .spectrum-beam {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            height: 1px;
-            width: 0;
-            opacity: 0;
-            transform-origin: left center;
-            transition: all 0.6s ease;
-        }
-        .prism-wrapper:hover .prism-core { transform: scale(0.85); }
-        .prism-wrapper:hover .spectrum-beam { width: 80px; opacity: 0.4; }
-        .beam-1 { transform: rotate(-30deg); background: #ff4d4d; }
-        .beam-2 { transform: rotate(-10deg); background: #ffd11a; }
-        .beam-3 { transform: rotate(10deg);  background: #33ff77; }
-        .beam-4 { transform: rotate(30deg);  background: #3399ff; }
-
-        .btn-green-discrete {
-            background: rgba(74, 222, 128, 0.05);
-            border: 1px solid rgba(74, 222, 128, 0.3);
-            color: #4ade80;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(4px);
-            display: inline-block;
-        }
-        .btn-green-discrete:hover {
-            background: rgba(74, 222, 128, 0.15);
-            border-color: rgba(74, 222, 128, 0.6);
-            box-shadow: 0 0 15px rgba(74, 222, 128, 0.2);
-            transform: translateY(-1px);
-        }
-
         .modest-card {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            overflow: hidden;
             z-index: 20;
-        }
-        .modest-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        .modest-card::after {
-            content: '';
-            position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(transparent, rgba(255,255,255,0.03), transparent);
-            transition: none;
-        }
-        .modest-card:hover::after {
-            animation: scanline 2s linear infinite;
-        }
-
-        @keyframes scanline {
-            0% { top: -100%; }
-            100% { top: 100%; }
         }
 
         .dot-indicator {
-            width: 4px;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
+            width: 4px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 50%;
             transition: background 0.3s ease, box-shadow 0.3s ease;
         }
-        .modest-card:hover .dot-indicator { background: #fff; }
 
-        .reveal {
-            opacity: 0;
-            animation: simpleFade 1s ease forwards;
-        }
+        .reveal { opacity: 0; animation: simpleFade 1s ease forwards; }
         @keyframes simpleFade { from { opacity: 0; } to { opacity: 1; } }
+
+        .laser-visual {
+            position: fixed;
+            pointer-events: none;
+            background: #ff0000;
+            box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+            z-index: 90;
+            height: 3px;
+            transform-origin: left center;
+        }
+
+        /* Target Green Beam */
+        .laser-target {
+            background: #33ff77 !important;
+            box-shadow: 0 0 15px #33ff77, 0 0 30px #33ff77 !important;
+        }
+
+        /* Flash Overlay */
+        #flash-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff;
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .do-flash { animation: screen-flash 0.8s ease-out forwards; }
+        @keyframes screen-flash {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .btn-green {
+            background: transparent;
+            color: #33ff77;
+            border: 1px solid rgba(51, 255, 119, 0.2);
+            padding: 12px 32px;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.2em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn-green:hover {
+            border-color: rgba(51, 255, 119, 0.8);
+            background: rgba(51, 255, 119, 0.05);
+            box-shadow: 0 0 20px rgba(51, 255, 119, 0.1);
+        }
+
+        section { padding: 100px 0; width: 100%; max-width: 1152px; }
     </style>
 </head>
-<body class="flex flex-col min-h-screen">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R9VSBWT2SH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
+  gtag('config', 'G-R9VSBWT2SH');
+</script>
+<body class="flex flex-col items-center">
+
+    <div id="flash-overlay"></div>
     <canvas id="particle-canvas"></canvas>
 
-    <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50">
-        <div class="flex items-center group">
-            <div class="prism-wrapper">
-                <div class="spectrum-beam beam-1"></div>
-                <div class="spectrum-beam beam-2"></div>
-                <div class="spectrum-beam beam-3"></div>
-                <div class="spectrum-beam beam-4"></div>
-                <div class="prism-core"></div>
-            </div>
-            <span class="ml-4 text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
-                Infinity Pixel
-            </span>
+    <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50 bg-transparent">
+        <div class="flex items-center group cursor-pointer">
+            <div class="w-6 h-6 bg-white rounded-sm transition-transform group-hover:rotate-45"></div>
+            <span class="ml-4 text-xs tracking-[0.3em] uppercase font-light opacity-50">Infinity Pixel</span>
         </div>
-        <a href="mailto:infinitypixelhub@proton.me" class="btn-green-discrete reveal" style="animation-delay: 0.4s">
-            Contact
-        </a>
+        <nav class="flex gap-10">
+            <a href="mailto:infinitypixelhub@proton.me" class="btn-green hover-target">Contact</a>
+        </nav>
     </header>
 
-    <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20 relative z-10">
+    <main class="flex-grow flex flex-col items-center px-8 w-full relative z-10">
         
-        <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
-            <h1 class="text-4xl md:text-5xl font-normal tracking-tight mb-8" id="hero-title">
-                <span class="scanned-text">Thoughtful</span> <span class="scanned-text">software,</span> <br>
-                <span class="opacity-40">carefully crafted.</span>
-            </h1>
-            <p class="text-gray-500 font-light leading-relaxed md:px-20 text-base">
-                A digital studio bridging the gap between artistic vision and technical precision.
-            </p>
-        </div>
+        <!-- Hero Section -->
+        <section class="min-h-screen flex flex-col justify-center items-center pt-20">
+            <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
+                <h1 class="text-4xl md:text-6xl font-normal tracking-tight mb-8" id="hero-title">
+                    <span class="scanned-text">Thoughtful</span> <span class="scanned-text">software,</span> <br>
+                    <span class="hero-subline opacity-40">carefully crafted.</span>
+                </h1>
+                <p class="text-gray-500 font-light leading-relaxed md:px-20 text-lg hero-description transition-opacity duration-1000">
+                    A digital studio bridging the gap between artistic vision and technical precision.
+                </p>
+            </div>
 
-        <div class="grid-wrapper reveal" style="animation-delay: 0.4s">
-            <div class="pixel-track">
-                <div class="walking-pixel-container" id="cube-container">
-                    <div class="pixel-cube"></div>
-                    <div class="spectrum-array">
-                        <div class="structured-beam beam-red" style="--angle: 0deg"></div>
-                        <div class="structured-beam beam-yellow" style="--angle: 0deg"></div>
-                        <div class="structured-beam beam-green" style="--angle: 0deg"></div>
-                        <div class="structured-beam beam-blue" style="--angle: 0deg"></div>
-                        <div class="structured-beam beam-red supernova-only" style="--angle: 90deg"></div>
-                        <div class="structured-beam beam-yellow supernova-only" style="--angle: 180deg"></div>
-                        <div class="structured-beam beam-green supernova-only" style="--angle: 270deg"></div>
-                        <div class="structured-beam beam-blue supernova-only" style="--angle: 45deg"></div>
-                        <div class="structured-beam beam-red supernova-only" style="--angle: 135deg"></div>
-                        <div class="structured-beam beam-yellow supernova-only" style="--angle: 225deg"></div>
-                        <div class="structured-beam beam-green supernova-only" style="--angle: 315deg"></div>
+            <!-- Interaction Zone -->
+            <div class="grid-wrapper reveal" style="animation-delay: 0.4s" id="interaction-zone">
+                <div class="pixel-track">
+                    <div class="walking-pixel-container" id="cube-container">
+                        <div class="pixel-cube"></div>
+                        <div class="spectrum-array">
+                            <div class="structured-beam beam-red"></div>
+                            <div class="structured-beam beam-yellow"></div>
+                            <div class="structured-beam beam-green"></div>
+                            <div class="structured-beam beam-blue"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="service-grid">
-                <div class="modest-card p-10 rounded-sm">
-                    <div class="dot-indicator mb-6"></div>
-                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
-                    <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Stable, high-performance applications for iOS and Android. Native-first architectures that ensure your product feels seamless.
-                    </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-16" id="service-grid">
+                    <div class="modest-card p-10 rounded-sm">
+                        <div class="dot-indicator mb-6"></div>
+                        <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">Native experiences that feel like home. Optimized for high-performance mobile ecosystems.</p>
+                    </div>
+                    <div class="modest-card p-10 rounded-sm">
+                        <div class="dot-indicator mb-6"></div>
+                        <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">Clean, responsive platforms built for longevity. Prioritizing accessibility and minimal load times across all browsers.</p>
+                    </div>
+                    <div class="modest-card p-10 rounded-sm">
+                        <div class="dot-indicator mb-6"></div>
+                        <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">Custom dashboards and privacy-first tracking. We transform complex metrics into actionable growth insights.</p>
+                    </div>
+                    <div class="modest-card p-10 rounded-sm">
+                        <div class="dot-indicator mb-6"></div>
+                        <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
+                        <p class="text-xs text-gray-600 leading-relaxed">Innovative mechanics and polished 2D experiences. Browser-based entertainment with deep interactive storytelling.</p>
+                    </div>
                 </div>
-                <div class="modest-card p-10 rounded-sm">
-                    <div class="dot-indicator mb-6"></div>
-                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
-                    <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Clean, responsive platforms built for longevity. Prioritizing accessibility and minimal load times across all browsers.
-                    </p>
-                </div>
-                <div class="modest-card p-10 rounded-sm">
-                    <div class="dot-indicator mb-6"></div>
-                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
-                    <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Custom dashboards and privacy-first tracking. We transform complex metrics into actionable growth insights.
-                    </p>
-                </div>
-                <div class="modest-card p-10 rounded-sm">
-                    <div class="dot-indicator mb-6"></div>
-                    <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
-                    <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Innovative mechanics and polished 2D experiences. Browser-based entertainment with deep interactive storytelling.
-                    </p>
+
+                <div class="flex justify-center upcoming-btn-container reveal" style="animation-delay: 0.5s">
+                    <a href="https://infinityxpixel.github.io/blankedgame/" target="_blank" class="btn-green hover-target">
+                        Upcoming Game: Blanked
+                    </a>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div class="reveal mt-24" style="animation-delay: 0.6s">
-            <a href="https://infinityxpixel.github.io/blankedgame/" target="_blank" rel="noopener noreferrer" class="btn-green-discrete py-3 px-8">
-                upcoming game: Blanked
-            </a>
-        </div>
     </main>
 
-    <footer class="p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 reveal text-[10px] tracking-widest text-gray-600 uppercase relative z-10" style="animation-delay: 0.8s">
-        <div>&copy; 2026 Infinity Pixel</div>
-        <div class="flex gap-8">
-            <a href="mailto:infinitypixelhub@proton.me" class="hover:text-white transition-colors">Direct Inquiry</a>
-            <span>Studio / Remote</span>
-        </div>
+    <footer class="p-10 w-full flex justify-center items-center text-[10px] tracking-widest text-gray-600 uppercase border-t border-white/5 relative z-10">
+        <div>&copy; 2026 Infinity Pixel Hub</div>
     </footer>
 
     <script>
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         const cubeContainer = document.getElementById('cube-container');
+        const flashOverlay = document.getElementById('flash-overlay');
+        const heroSpans = document.querySelectorAll('.scanned-text, .hero-subline');
+        const scannedTitles = document.querySelectorAll('.scanned-text');
+        const description = document.querySelector('.hero-description');
         const cards = document.querySelectorAll('.modest-card');
-        const heroSpans = document.querySelectorAll('.scanned-text');
+        const hoverTargets = document.querySelectorAll('.hover-target');
+        const upcomingBtnContainer = document.querySelector('.upcoming-btn-container');
         
         let particles = [];
         let globalRays = [];
-        let mouse = { x: undefined, y: undefined };
-        let hoverTimer;
-        
+        let isTargeting = false;
+        let isDestroying = false;
+        let targetingInterval = null;
         const PRISM_COLORS = ['#ff4d4d', '#ffd11a', '#33ff77', '#3399ff'];
         let colorIndex = 0;
 
@@ -380,20 +331,40 @@
         window.addEventListener('resize', resize);
         resize();
 
+        class Particle {
+            constructor(x, y, color, speedMult = 1) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 4 * speedMult;
+                this.speedY = (Math.random() - 0.5) * 4 * speedMult;
+                this.color = color;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.02 + 0.01;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
         class GlobalRay {
             constructor(x, color) {
                 this.x = x;
                 this.color = color;
                 this.life = 1.0;
-                this.decay = 0.02;
                 this.width = Math.random() * 0.5 + 0.1;
             }
-            update() {
-                this.life -= this.decay;
-            }
+            update() { this.life -= 0.02; }
             draw() {
                 ctx.strokeStyle = this.color;
-                ctx.globalAlpha = this.life * 0.3;
+                ctx.globalAlpha = Math.max(0, this.life * 0.3);
                 ctx.lineWidth = this.width;
                 ctx.beginPath();
                 ctx.moveTo(this.x, 0);
@@ -402,89 +373,144 @@
             }
         }
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * 3 + 1;
-                this.speedX = (Math.random() - 0.5) * 2;
-                this.speedY = (Math.random() - 0.5) * 2;
-                this.color = color;
-                this.life = 1.0;
-                this.decay = Math.random() * 0.015 + 0.01;
-            }
+        function createLaser(startX, startY, endX, endY, isGreen = false) {
+            const laser = document.createElement('div');
+            laser.className = 'laser-visual' + (isGreen ? ' laser-target' : '');
+            const dist = Math.hypot(endX - startX, endY - startY);
+            const angle = Math.atan2(endY - startY, endX - startX);
+            
+            laser.style.width = dist + 'px';
+            laser.style.left = startX + 'px';
+            laser.style.top = startY + 'px';
+            laser.style.transform = `rotate(${angle}rad)`;
+            
+            const thickness = Math.random() * 4 + 1;
+            laser.style.height = thickness + 'px';
+            
+            document.body.appendChild(laser);
+            setTimeout(() => laser.remove(), 60);
 
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life -= this.decay;
-                if (this.life < 0) this.life = 0;
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.globalAlpha = this.life * 0.6;
-                ctx.fillRect(this.x, this.y, this.size, this.size);
-            }
-        }
-
-        function handleElements() {
-            // Global Rays
-            for (let i = 0; i < globalRays.length; i++) {
-                globalRays[i].update();
-                globalRays[i].draw();
-                if (globalRays[i].life <= 0) {
-                    globalRays.splice(i, 1);
-                    i--;
-                }
-            }
-
-            // Particles
-            for (let i = 0; i < particles.length; i++) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].life <= 0) {
-                    particles.splice(i, 1);
-                    i--;
-                }
+            for(let i=0; i<3; i++) {
+                particles.push(new Particle(endX, endY, isGreen ? '#33ff77' : '#ff0000', 3));
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            handleElements();
+            
+            globalRays.forEach((ray, i) => {
+                ray.update(); ray.draw();
+                if(ray.life <= 0) globalRays.splice(i, 1);
+            });
+
+            particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if(p.life <= 0) particles.splice(i, 1);
+            });
+            
             requestAnimationFrame(animate);
         }
         animate();
 
-        // Mouse Trail
-        document.addEventListener('mousemove', (e) => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
+        // Destruction Interaction logic (Restored)
+        cubeContainer.addEventListener('click', () => {
+            if (isDestroying || isTargeting) return;
+            isDestroying = true;
             
-            for(let i = 0; i < 3; i++) {
-                const color = PRISM_COLORS[Math.floor(colorIndex) % PRISM_COLORS.length];
-                particles.push(new Particle(mouse.x, mouse.y, color));
-                colorIndex += 0.1;
-            }
+            document.body.classList.add('destroy-mode');
+            cubeContainer.classList.add('paused');
+            
+            const rect = cubeContainer.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2;
+            const startY = rect.top + rect.height / 2;
+
+            // Phase 1: Fire Red Lasers at Title
+            const destroyInterval = setInterval(() => {
+                heroSpans.forEach(el => {
+                    el.classList.add('is-disintegrating');
+                    const elRect = el.getBoundingClientRect();
+                    const targetX = elRect.left + Math.random() * elRect.width;
+                    const targetY = elRect.top + Math.random() * elRect.height;
+                    createLaser(startX, startY, targetX, targetY, false);
+                });
+                upcomingBtnContainer.style.opacity = '0';
+                description.style.opacity = '0.1';
+            }, 70);
+
+            // Phase 2: Screen Flash and Fade
+            setTimeout(() => {
+                clearInterval(destroyInterval);
+                heroSpans.forEach(el => el.style.opacity = '0');
+                description.style.opacity = '0';
+                
+                // Burst of particles
+                for(let i = 0; i < 200; i++) {
+                    particles.push(new Particle(window.innerWidth/2, window.innerHeight/2, PRISM_COLORS[i%4], 15));
+                }
+                
+                flashOverlay.classList.add('do-flash');
+            }, 2000);
+
+            // Phase 3: Restoration
+            setTimeout(() => {
+                document.body.classList.remove('destroy-mode');
+                cubeContainer.classList.remove('paused');
+                flashOverlay.classList.remove('do-flash');
+                heroSpans.forEach(el => {
+                    el.classList.remove('is-disintegrating');
+                    el.style.opacity = '';
+                });
+                description.style.opacity = '';
+                upcomingBtnContainer.style.opacity = '';
+                isDestroying = false;
+            }, 2800);
         });
 
-        // Loop to check Pixel position and update world
+        // Hover Laser Logic
+        hoverTargets.forEach(target => {
+            target.addEventListener('mouseenter', () => {
+                if (isDestroying) return;
+                isTargeting = true;
+                cubeContainer.classList.add('paused');
+                document.querySelector('.spectrum-array').style.opacity = '0';
+                
+                targetingInterval = setInterval(() => {
+                    const pixelRect = cubeContainer.getBoundingClientRect();
+                    const targetRect = target.getBoundingClientRect();
+                    
+                    const startX = pixelRect.left + pixelRect.width / 2;
+                    const startY = pixelRect.top + pixelRect.height / 2;
+                    
+                    const targetX = targetRect.left + Math.random() * targetRect.width;
+                    const targetY = targetRect.top + Math.random() * targetRect.height;
+                    
+                    createLaser(startX, startY, targetX, targetY, true);
+                }, 50);
+            });
+
+            target.addEventListener('mouseleave', () => {
+                isTargeting = false;
+                clearInterval(targetingInterval);
+                if (!isDestroying) {
+                    cubeContainer.classList.remove('paused');
+                    document.querySelector('.spectrum-array').style.opacity = '1';
+                }
+            });
+        });
+
+        // Background Logic
         setInterval(() => {
             const rect = cubeContainer.getBoundingClientRect();
             const cubeX = rect.left + rect.width / 2;
             const activeColor = PRISM_COLORS[Math.floor(Date.now() / 800) % PRISM_COLORS.length];
 
-            // 1. Generate shooting rays
             if (!cubeContainer.classList.contains('paused')) {
                 globalRays.push(new GlobalRay(cubeX, activeColor));
             }
 
-            // 2. Animate Hero Text as pixel passes
-            heroSpans.forEach((span, idx) => {
+            scannedTitles.forEach((span, idx) => {
                 const spanRect = span.getBoundingClientRect();
                 const distance = Math.abs(cubeX - (spanRect.left + spanRect.width/2));
-                
                 if (distance < 150) {
                     const intensity = 1 - (distance / 150);
                     const color = PRISM_COLORS[idx % PRISM_COLORS.length];
@@ -496,20 +522,16 @@
                 }
             });
 
-            // 3. Highlight cards
             cards.forEach((card, index) => {
                 const cardRect = card.getBoundingClientRect();
                 if (cubeX >= cardRect.left && cubeX <= cardRect.right) {
                     const cycleColor = PRISM_COLORS[index % PRISM_COLORS.length];
                     card.style.borderColor = cycleColor;
-                    card.style.boxShadow = `0 0 20px ${cycleColor}22`;
-                    
                     const dot = card.querySelector('.dot-indicator');
                     dot.style.background = cycleColor;
                     dot.style.boxShadow = `0 0 10px ${cycleColor}`;
                 } else {
                     card.style.borderColor = '';
-                    card.style.boxShadow = '';
                     const dot = card.querySelector('.dot-indicator');
                     dot.style.background = '';
                     dot.style.boxShadow = '';
@@ -517,15 +539,12 @@
             });
         }, 30);
 
-        cubeContainer.addEventListener('mouseenter', () => {
-            cubeContainer.classList.add('paused');
-            clearTimeout(hoverTimer);
-        });
-
-        cubeContainer.addEventListener('mouseleave', () => {
-            hoverTimer = setTimeout(() => {
-                cubeContainer.classList.remove('paused');
-            }, 500);
+        document.addEventListener('mousemove', (e) => {
+            if (isTargeting || isDestroying) return;
+            for(let i = 0; i < 2; i++) {
+                particles.push(new Particle(e.clientX, e.clientY, PRISM_COLORS[Math.floor(colorIndex)%4]));
+                colorIndex += 0.05;
+            }
         });
     </script>
 </body>
