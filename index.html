@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Infinity Pixel - IT Solutions</title>
-    <!-- Favicon using the Prism Logo concept -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='25' y='25' width='50' height='50' fill='white' rx='5'/></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -19,14 +18,24 @@
             cursor: auto;
         }
 
-        /* Responsive Grid Container */
-        .grid-wrapper {
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 1152px; /* 6xl */
-            position: relative;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.8;
         }
 
-        /* Walking Track - Exactly matching the grid width */
+        .grid-wrapper {
+            width: 100%;
+            max-width: 1152px;
+            position: relative;
+            z-index: 10;
+        }
+
         .pixel-track {
             width: 100%;
             height: 1px;
@@ -42,19 +51,16 @@
             left: 0;
             width: 24px;
             height: 24px;
-            /* 30% slower than previous 50s = 65s */
             animation: walk-grid-bounds 65s linear infinite;
             z-index: 50;
             pointer-events: auto;
             cursor: crosshair;
         }
 
-        /* Pause logic via class */
         .paused {
             animation-play-state: paused !important;
         }
 
-        /* The Cube */
         .pixel-cube {
             width: 100%;
             height: 100%;
@@ -66,15 +72,13 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Hover State: Supernova */
         .walking-pixel-container:hover .pixel-cube {
-            background: #fbbf24; /* Gold */
+            background: #fbbf24;
             box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
             transform: scale(1.4) rotate(45deg);
             animation: cube-vibrate 0.1s linear infinite;
         }
 
-        /* Structured Beam Emission */
         .spectrum-array {
             position: absolute;
             top: 50%;
@@ -87,7 +91,6 @@
             transition: all 0.4s ease;
         }
 
-        /* When hovering, explode beams in all directions */
         .walking-pixel-container:hover .spectrum-array {
             transform: translate(-50%, -50%);
             left: 50%;
@@ -107,7 +110,6 @@
         .beam-green  { background: #33ff77; animation-delay: 0.4s; box-shadow: 0 0 8px #33ff77; }
         .beam-blue   { background: #3399ff; animation-delay: 0.6s; box-shadow: 0 0 8px #3399ff; }
 
-        /* Supernova beams */
         .supernova-only { display: none; }
         .walking-pixel-container:hover .supernova-only { display: block; }
         
@@ -149,7 +151,6 @@
             100% { width: 220px; opacity: 0; transform: rotate(var(--angle)) translateX(110px); }
         }
 
-        /* Logo */
         .prism-wrapper {
             position: relative;
             width: 24px;
@@ -205,9 +206,10 @@
         .modest-card {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            transition: all 0.4s ease;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            z-index: 20;
         }
         .modest-card:hover {
             border-color: rgba(255, 255, 255, 0.2);
@@ -238,20 +240,9 @@
             height: 4px;
             background: rgba(255,255,255,0.2);
             border-radius: 50%;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
         .modest-card:hover .dot-indicator { background: #fff; }
-
-        .background-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02) 0%, transparent 80%);
-            pointer-events: none;
-            z-index: -1;
-        }
 
         .reveal {
             opacity: 0;
@@ -262,7 +253,7 @@
 </head>
 <body class="flex flex-col min-h-screen">
 
-    <div class="background-glow" id="glow"></div>
+    <canvas id="particle-canvas"></canvas>
 
     <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50">
         <div class="flex items-center group">
@@ -282,7 +273,7 @@
         </a>
     </header>
 
-    <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20">
+    <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20 relative z-10">
         
         <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
             <h1 class="text-4xl md:text-5xl font-normal tracking-tight mb-8">
@@ -295,18 +286,14 @@
         </div>
 
         <div class="grid-wrapper reveal" style="animation-delay: 0.4s">
-            
             <div class="pixel-track">
                 <div class="walking-pixel-container" id="cube-container">
                     <div class="pixel-cube"></div>
-                    
                     <div class="spectrum-array">
                         <div class="structured-beam beam-red" style="--angle: 0deg"></div>
                         <div class="structured-beam beam-yellow" style="--angle: 0deg"></div>
                         <div class="structured-beam beam-green" style="--angle: 0deg"></div>
                         <div class="structured-beam beam-blue" style="--angle: 0deg"></div>
-                        
-                        <!-- Supernova Extra Beams -->
                         <div class="structured-beam beam-red supernova-only" style="--angle: 90deg"></div>
                         <div class="structured-beam beam-yellow supernova-only" style="--angle: 180deg"></div>
                         <div class="structured-beam beam-green supernova-only" style="--angle: 270deg"></div>
@@ -326,7 +313,6 @@
                         Stable, high-performance applications for iOS and Android. Native-first architectures that ensure your product feels seamless.
                     </p>
                 </div>
-
                 <div class="modest-card p-10 rounded-sm">
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
@@ -334,7 +320,6 @@
                         Clean, responsive platforms built for longevity. Prioritizing accessibility and minimal load times across all browsers.
                     </p>
                 </div>
-
                 <div class="modest-card p-10 rounded-sm">
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
@@ -342,7 +327,6 @@
                         Custom dashboards and privacy-first tracking. We transform complex metrics into actionable growth insights.
                     </p>
                 </div>
-
                 <div class="modest-card p-10 rounded-sm">
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
@@ -358,10 +342,9 @@
                 upcoming game: Blanked
             </a>
         </div>
-
     </main>
 
-    <footer class="p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 reveal text-[10px] tracking-widest text-gray-600 uppercase" style="animation-delay: 0.8s">
+    <footer class="p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 reveal text-[10px] tracking-widest text-gray-600 uppercase relative z-10" style="animation-delay: 0.8s">
         <div>&copy; 2026 Infinity Pixel</div>
         <div class="flex gap-8">
             <a href="mailto:infinitypixelhub@proton.me" class="hover:text-white transition-colors">Direct Inquiry</a>
@@ -370,50 +353,124 @@
     </footer>
 
     <script>
-        const glow = document.getElementById('glow');
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
         const cubeContainer = document.getElementById('cube-container');
         const cards = document.querySelectorAll('.modest-card');
+        
+        let particles = [];
+        let mouse = { x: undefined, y: undefined };
         let hoverTimer;
+        
+        // Prism ray colors
+        const PRISM_COLORS = ['#ff4d4d', '#ffd11a', '#33ff77', '#3399ff'];
+        let colorIndex = 0;
 
-        // Mouse follow glow effect
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = (Math.random() - 0.5) * 2;
+                this.speedY = (Math.random() - 0.5) * 2;
+                this.color = color;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.015 + 0.01;
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                if (this.life < 0) this.life = 0;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = this.life * 0.6;
+                // Square data-pixel look
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+            }
+        }
+
+        function handleParticles() {
+            ctx.globalAlpha = 1;
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            handleParticles();
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Mouse Trail with cycling prism colors
         document.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth) * 100;
-            const y = (e.clientY / window.innerHeight) * 100;
-            glow.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.035) 0%, transparent 60%)`;
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            
+            for(let i = 0; i < 3; i++) {
+                // Cycle colors based on mouse movement frequency
+                const color = PRISM_COLORS[Math.floor(colorIndex) % PRISM_COLORS.length];
+                particles.push(new Particle(mouse.x, mouse.y, color));
+                colorIndex += 0.1;
+            }
         });
 
         // Pause on Hover Logic
         cubeContainer.addEventListener('mouseenter', () => {
-            // Immediately pause the path
             cubeContainer.classList.add('paused');
-            
-            // Clear any existing timer
             clearTimeout(hoverTimer);
-            
-            // Optional: after 2 seconds, if still hovering, keep paused (handled by mouseleave)
-            // If you wanted it to "resume" while still hovering after 2s, we could do that here.
         });
 
         cubeContainer.addEventListener('mouseleave', () => {
-            // Small delay before resuming to keep it feeling deliberate
             hoverTimer = setTimeout(() => {
                 cubeContainer.classList.remove('paused');
             }, 500);
         });
 
-        // Intersection Logic to highlight cards
+        // Intersection Logic to highlight cards with prism colors
         setInterval(() => {
             const rect = cubeContainer.getBoundingClientRect();
             const cubeX = rect.left + rect.width / 2;
+            
+            // Derive a color from the cube's position for the "active" card
+            const activeColor = PRISM_COLORS[Math.floor(Date.now() / 800) % PRISM_COLORS.length];
 
-            cards.forEach(card => {
+            cards.forEach((card, index) => {
                 const cardRect = card.getBoundingClientRect();
                 if (cubeX >= cardRect.left && cubeX <= cardRect.right) {
-                    card.style.borderColor = 'rgba(74, 222, 128, 0.3)';
-                    card.querySelector('.dot-indicator').style.background = '#4ade80';
+                    // Match the card border and indicator to a cycle of prism colors
+                    const cycleColor = PRISM_COLORS[index % PRISM_COLORS.length];
+                    card.style.borderColor = cycleColor.replace(')', ', 0.4)').replace('#', 'rgba('); 
+                    // Simpler hex to rgba logic for the border:
+                    card.style.borderColor = cycleColor;
+                    card.style.boxShadow = `0 0 20px ${cycleColor}22`; // Adding low opacity hex
+                    
+                    const dot = card.querySelector('.dot-indicator');
+                    dot.style.background = cycleColor;
+                    dot.style.boxShadow = `0 0 10px ${cycleColor}`;
                 } else {
                     card.style.borderColor = '';
-                    card.querySelector('.dot-indicator').style.background = '';
+                    card.style.boxShadow = '';
+                    const dot = card.querySelector('.dot-indicator');
+                    dot.style.background = '';
+                    dot.style.boxShadow = '';
                 }
             });
         }, 100);
