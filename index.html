@@ -19,11 +19,18 @@
             cursor: auto;
         }
 
-        /* Walking Track Above Grid */
+        /* Responsive Grid Container */
+        .grid-wrapper {
+            width: 100%;
+            max-width: 1152px; /* 6xl */
+            position: relative;
+        }
+
+        /* Walking Track - Exactly matching the grid width */
         .pixel-track {
             width: 100%;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.1) 80%, transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2) 10%, rgba(255, 255, 255, 0.2) 90%, transparent);
             position: relative;
             margin-bottom: 56px;
             overflow: visible;
@@ -31,44 +38,59 @@
 
         .walking-pixel-container {
             position: absolute;
-            bottom: -10px;
-            left: -30px;
-            width: 20px;
-            height: 20px;
-            animation: walk-across-grid 40s linear infinite;
-            z-index: 10;
+            bottom: -12px;
+            left: 0;
+            width: 24px;
+            height: 24px;
+            /* 30% slower than previous 50s = 65s */
+            animation: walk-grid-bounds 65s linear infinite;
+            z-index: 50;
+            pointer-events: auto;
+            cursor: crosshair;
         }
 
-        /* The Cube: A 3D-ish isometric pixel */
+        /* Pause logic via class */
+        .paused {
+            animation-play-state: paused !important;
+        }
+
+        /* The Cube */
         .pixel-cube {
             width: 100%;
             height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            animation: cube-bounce 0.6s ease-in-out infinite alternate;
+            background: #ffffff;
+            box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.4);
+            animation: cube-bounce 0.8s ease-in-out infinite alternate;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Structured 3D Face Design */
-        .pixel-cube::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: #ffffff;
-            box-shadow: inset -4px -4px 0 rgba(0,0,0,0.1), 0 0 15px rgba(255,255,255,0.3);
+        /* Hover State: Supernova */
+        .walking-pixel-container:hover .pixel-cube {
+            background: #fbbf24; /* Gold */
+            box-shadow: 0 0 40px rgba(251, 191, 36, 0.8);
+            transform: scale(1.4) rotate(45deg);
+            animation: cube-vibrate 0.1s linear infinite;
         }
 
         /* Structured Beam Emission */
         .spectrum-array {
             position: absolute;
             top: 50%;
-            left: 100%;
+            left: 50%;
             display: flex;
             flex-direction: column;
             gap: 4px;
-            transform: translateY(-50%);
-            padding-left: 10px;
+            transform: translate(10px, -50%);
             pointer-events: none;
+            transition: all 0.4s ease;
+        }
+
+        /* When hovering, explode beams in all directions */
+        .walking-pixel-container:hover .spectrum-array {
+            transform: translate(-50%, -50%);
+            left: 50%;
         }
 
         .structured-beam {
@@ -80,37 +102,60 @@
             animation: structured-shoot 2s infinite;
         }
 
-        /* Sequential Timing and specific colors */
         .beam-red    { background: #ff4d4d; animation-delay: 0.0s; box-shadow: 0 0 8px #ff4d4d; }
         .beam-yellow { background: #ffd11a; animation-delay: 0.2s; box-shadow: 0 0 8px #ffd11a; }
         .beam-green  { background: #33ff77; animation-delay: 0.4s; box-shadow: 0 0 8px #33ff77; }
         .beam-blue   { background: #3399ff; animation-delay: 0.6s; box-shadow: 0 0 8px #3399ff; }
 
-        @keyframes walk-across-grid {
-            0% { left: -5%; }
-            100% { left: 105%; }
+        /* Supernova beams */
+        .supernova-only { display: none; }
+        .walking-pixel-container:hover .supernova-only { display: block; }
+        
+        .walking-pixel-container:hover .structured-beam {
+            animation: supernova-shoot 1.5s infinite;
+        }
+
+        @keyframes walk-grid-bounds {
+            0% { left: 0%; transform: scaleX(1); }
+            48% { transform: scaleX(1); }
+            50% { left: calc(100% - 24px); transform: scaleX(-1); }
+            98% { transform: scaleX(-1); }
+            100% { left: 0%; transform: scaleX(1); }
         }
 
         @keyframes cube-bounce {
             from { transform: translateY(0) scaleY(1); }
-            to { transform: translateY(-6px) scaleY(0.9); }
+            to { transform: translateY(-10px) scaleY(0.8); }
+        }
+
+        @keyframes cube-vibrate {
+            0% { transform: scale(1.4) rotate(45deg) translate(0); }
+            25% { transform: scale(1.4) rotate(45deg) translate(2px, -2px); }
+            50% { transform: scale(1.4) rotate(45deg) translate(-2px, 2px); }
+            75% { transform: scale(1.4) rotate(45deg) translate(2px, 2px); }
+            100% { transform: scale(1.4) rotate(45deg) translate(0); }
         }
 
         @keyframes structured-shoot {
             0% { width: 0; opacity: 0; transform: translateX(0); }
             10% { opacity: 1; }
             40% { width: 60px; opacity: 1; }
-            100% { width: 120px; opacity: 0; transform: translateX(40px); }
+            100% { width: 140px; opacity: 0; transform: translateX(60px); }
         }
 
-        /* Modest Prism Logo */
+        @keyframes supernova-shoot {
+            0% { width: 0; opacity: 0; transform: rotate(var(--angle)) translateX(0); }
+            20% { opacity: 1; }
+            100% { width: 220px; opacity: 0; transform: rotate(var(--angle)) translateX(110px); }
+        }
+
+        /* Logo */
         .prism-wrapper {
             position: relative;
             width: 24px;
             height: 24px;
             cursor: pointer;
         }
-
         .prism-core {
             width: 100%;
             height: 100%;
@@ -120,7 +165,6 @@
             z-index: 2;
             transition: all 0.5s ease;
         }
-
         .spectrum-beam {
             position: absolute;
             top: 50%;
@@ -131,22 +175,13 @@
             transform-origin: left center;
             transition: all 0.6s ease;
         }
-
-        .prism-wrapper:hover .prism-core {
-            transform: scale(0.85);
-        }
-
-        .prism-wrapper:hover .spectrum-beam {
-            width: 80px;
-            opacity: 0.4;
-        }
-
+        .prism-wrapper:hover .prism-core { transform: scale(0.85); }
+        .prism-wrapper:hover .spectrum-beam { width: 80px; opacity: 0.4; }
         .beam-1 { transform: rotate(-30deg); background: #ff4d4d; }
         .beam-2 { transform: rotate(-10deg); background: #ffd11a; }
         .beam-3 { transform: rotate(10deg);  background: #33ff77; }
         .beam-4 { transform: rotate(30deg);  background: #3399ff; }
 
-        /* Contact & CTA Button Styles */
         .btn-green-discrete {
             background: rgba(74, 222, 128, 0.05);
             border: 1px solid rgba(74, 222, 128, 0.3);
@@ -160,7 +195,6 @@
             backdrop-filter: blur(4px);
             display: inline-block;
         }
-
         .btn-green-discrete:hover {
             background: rgba(74, 222, 128, 0.15);
             border-color: rgba(74, 222, 128, 0.6);
@@ -168,21 +202,35 @@
             transform: translateY(-1px);
         }
 
-        .hero-text {
-            letter-spacing: -0.02em;
-            font-weight: 400;
-        }
-
         .modest-card {
             background: transparent;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.4s ease;
             position: relative;
+            overflow: hidden;
+        }
+        .modest-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        
+        .modest-card::after {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(transparent, rgba(255,255,255,0.03), transparent);
+            transition: none;
+        }
+        .modest-card:hover::after {
+            animation: scanline 2s linear infinite;
         }
 
-        .modest-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.01);
+        @keyframes scanline {
+            0% { top: -100%; }
+            100% { top: 100%; }
         }
 
         .dot-indicator {
@@ -192,10 +240,7 @@
             border-radius: 50%;
             transition: background 0.3s ease;
         }
-
-        .modest-card:hover .dot-indicator {
-            background: #fff;
-        }
+        .modest-card:hover .dot-indicator { background: #fff; }
 
         .background-glow {
             position: fixed;
@@ -208,25 +253,19 @@
             z-index: -1;
         }
 
-        @keyframes simpleFade {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
         .reveal {
             opacity: 0;
-            animation: simpleFade 1.5s ease forwards;
+            animation: simpleFade 1s ease forwards;
         }
+        @keyframes simpleFade { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
 
     <div class="background-glow" id="glow"></div>
 
-    <!-- Modest Header -->
     <header class="p-8 md:p-10 flex justify-between items-center w-full fixed top-0 z-50">
         <div class="flex items-center group">
-            <!-- Prism Logo -->
             <div class="prism-wrapper">
                 <div class="spectrum-beam beam-1"></div>
                 <div class="spectrum-beam beam-2"></div>
@@ -234,58 +273,57 @@
                 <div class="spectrum-beam beam-4"></div>
                 <div class="prism-core"></div>
             </div>
-
-            <!-- Text -->
             <span class="ml-4 text-xs tracking-[0.3em] uppercase font-light opacity-50 group-hover:opacity-100 transition-opacity">
                 Infinity Pixel
             </span>
         </div>
-
-        <!-- Top Right Contact Button -->
         <a href="mailto:infinitypixelhub@proton.me" class="btn-green-discrete reveal" style="animation-delay: 0.4s">
             Contact
         </a>
     </header>
 
-    <!-- Content -->
     <main class="flex-grow flex flex-col justify-center items-center px-8 pt-40 pb-20">
         
         <div class="text-center max-w-3xl mb-24 reveal" style="animation-delay: 0.2s">
-            <h1 class="hero-text text-4xl md:text-5xl mb-8">
+            <h1 class="text-4xl md:text-5xl font-normal tracking-tight mb-8">
                 Thoughtful software, <br>
                 <span class="opacity-40">carefully crafted.</span>
             </h1>
             <p class="text-gray-500 font-light leading-relaxed md:px-20 text-base">
-                We are a small collective focused on building digital tools that balance simplicity with technical integrity.
+                A digital studio bridging the gap between artistic vision and technical precision.
             </p>
         </div>
 
-        <!-- Grid Container with Cube Walking Above -->
-        <div class="w-full max-w-6xl reveal" style="animation-delay: 0.4s">
+        <div class="grid-wrapper reveal" style="animation-delay: 0.4s">
             
-            <!-- Walking Track -->
             <div class="pixel-track">
-                <div class="walking-pixel-container">
-                    <!-- The Cube Character -->
+                <div class="walking-pixel-container" id="cube-container">
                     <div class="pixel-cube"></div>
                     
-                    <!-- Structured Array of Beams -->
                     <div class="spectrum-array">
-                        <div class="structured-beam beam-red"></div>
-                        <div class="structured-beam beam-yellow"></div>
-                        <div class="structured-beam beam-green"></div>
-                        <div class="structured-beam beam-blue"></div>
+                        <div class="structured-beam beam-red" style="--angle: 0deg"></div>
+                        <div class="structured-beam beam-yellow" style="--angle: 0deg"></div>
+                        <div class="structured-beam beam-green" style="--angle: 0deg"></div>
+                        <div class="structured-beam beam-blue" style="--angle: 0deg"></div>
+                        
+                        <!-- Supernova Extra Beams -->
+                        <div class="structured-beam beam-red supernova-only" style="--angle: 90deg"></div>
+                        <div class="structured-beam beam-yellow supernova-only" style="--angle: 180deg"></div>
+                        <div class="structured-beam beam-green supernova-only" style="--angle: 270deg"></div>
+                        <div class="structured-beam beam-blue supernova-only" style="--angle: 45deg"></div>
+                        <div class="structured-beam beam-red supernova-only" style="--angle: 135deg"></div>
+                        <div class="structured-beam beam-yellow supernova-only" style="--angle: 225deg"></div>
+                        <div class="structured-beam beam-green supernova-only" style="--angle: 315deg"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Expanded Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="service-grid">
                 <div class="modest-card p-10 rounded-sm">
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Mobile</h3>
                     <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Developing stable, high-performance mobile applications for iOS and Android. We focus on seamless interactions and native-first architectures that ensure your product feels right at home on any device.
+                        Stable, high-performance applications for iOS and Android. Native-first architectures that ensure your product feels seamless.
                     </p>
                 </div>
 
@@ -293,7 +331,7 @@
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Web</h3>
                     <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Crafting clean, responsive web platforms built for longevity and speed. From modern headless CMS integrations to lightweight static sites, we prioritize accessibility and minimal load times.
+                        Clean, responsive platforms built for longevity. Prioritizing accessibility and minimal load times across all browsers.
                     </p>
                 </div>
 
@@ -301,15 +339,15 @@
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Analytics</h3>
                     <p class="text-xs text-gray-500 font-light leading-relaxed">
-                        Providing clear visualizations and deep-dive reporting to help you understand your data. We transform complex metrics into actionable insights through custom dashboards and privacy-first tracking solutions.
+                        Custom dashboards and privacy-first tracking. We transform complex metrics into actionable growth insights.
                     </p>
                 </div>
 
                 <div class="modest-card p-10 rounded-sm">
                     <div class="dot-indicator mb-6"></div>
                     <h3 class="text-sm font-semibold mb-3 tracking-wide uppercase">Games</h3>
-                    <p class="text-xs text-gray-500 font-light relaxed">
-                        Creating fun and innovative games with engaging mechanics. We specialize in polished 2D experiences and browser-based entertainment that pushes the boundaries of small-scale interactive storytelling.
+                    <p class="text-xs text-gray-500 font-light leading-relaxed">
+                        Innovative mechanics and polished 2D experiences. Browser-based entertainment with deep interactive storytelling.
                     </p>
                 </div>
             </div>
@@ -323,7 +361,6 @@
 
     </main>
 
-    <!-- Modest Footer -->
     <footer class="p-8 md:p-10 flex flex-col md:flex-row justify-between items-center gap-6 reveal text-[10px] tracking-widest text-gray-600 uppercase" style="animation-delay: 0.8s">
         <div>&copy; 2026 Infinity Pixel</div>
         <div class="flex gap-8">
@@ -334,12 +371,52 @@
 
     <script>
         const glow = document.getElementById('glow');
-        
+        const cubeContainer = document.getElementById('cube-container');
+        const cards = document.querySelectorAll('.modest-card');
+        let hoverTimer;
+
+        // Mouse follow glow effect
         document.addEventListener('mousemove', (e) => {
             const x = (e.clientX / window.innerWidth) * 100;
             const y = (e.clientY / window.innerHeight) * 100;
             glow.style.background = `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.035) 0%, transparent 60%)`;
         });
+
+        // Pause on Hover Logic
+        cubeContainer.addEventListener('mouseenter', () => {
+            // Immediately pause the path
+            cubeContainer.classList.add('paused');
+            
+            // Clear any existing timer
+            clearTimeout(hoverTimer);
+            
+            // Optional: after 2 seconds, if still hovering, keep paused (handled by mouseleave)
+            // If you wanted it to "resume" while still hovering after 2s, we could do that here.
+        });
+
+        cubeContainer.addEventListener('mouseleave', () => {
+            // Small delay before resuming to keep it feeling deliberate
+            hoverTimer = setTimeout(() => {
+                cubeContainer.classList.remove('paused');
+            }, 500);
+        });
+
+        // Intersection Logic to highlight cards
+        setInterval(() => {
+            const rect = cubeContainer.getBoundingClientRect();
+            const cubeX = rect.left + rect.width / 2;
+
+            cards.forEach(card => {
+                const cardRect = card.getBoundingClientRect();
+                if (cubeX >= cardRect.left && cubeX <= cardRect.right) {
+                    card.style.borderColor = 'rgba(74, 222, 128, 0.3)';
+                    card.querySelector('.dot-indicator').style.background = '#4ade80';
+                } else {
+                    card.style.borderColor = '';
+                    card.querySelector('.dot-indicator').style.background = '';
+                }
+            });
+        }, 100);
     </script>
 </body>
 </html>
